@@ -42,26 +42,31 @@ export const CameraModal: React.FC<CameraModalProps> = ({
     setCameraError(null);
 
     try {
-      // Check if mediaDevices supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('La cámara no está soportada en este navegador.');
       }
 
-      // Check available video inputs
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter((device) => device.kind === 'videoinput');
       setHasMultipleCameras(videoDevices.length > 1);
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      };
+      let mediaStream: MediaStream;
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      try {
+        // Intento 1: Pedir la cámara específica (trasera o frontal)
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+          audio: false,
+        });
+      } catch (e) {
+        // Intento 2: Fallback genérico si el dispositivo rechaza el facingMode
+        console.warn('Fallback a cámara genérica', e);
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
+
       setStream(mediaStream);
 
       if (videoRef.current) {
@@ -72,9 +77,11 @@ export const CameraModal: React.FC<CameraModalProps> = ({
       console.error('Error al acceder a la cámara:', err);
       let errorMsg = 'No se pudo acceder a la cámara.';
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        errorMsg = 'Permiso de cámara denegado. Por favor, actívalo en los ajustes de tu navegador.';
+        errorMsg = 'Permiso denegado. Asegúrate de permitir el acceso a la cámara en el navegador.';
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        errorMsg = 'No se encontró ningún dispositivo de cámara.';
+        errorMsg = 'No se encontró ningún dispositivo de cámara conectado.';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        errorMsg = 'La cámara ya está siendo usada por otra aplicación.';
       }
       setCameraError(errorMsg);
     }

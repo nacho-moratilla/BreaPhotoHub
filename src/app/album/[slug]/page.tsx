@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useEffect, useState, useCallback, use } from 'react';
 import { notFound } from 'next/navigation';
 import confetti from 'canvas-confetti';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Camera, RefreshCw, X, Check, RotateCcw, ImagePlus, AlertCircle } from 'lucide-react';
+import { Camera, RefreshCw, X, Check, RotateCcw, ImagePlus, AlertCircle, ArrowLeft } from 'lucide-react';
 import { compressImage } from '@/lib/utils';
 
 interface CameraModalProps {
@@ -238,22 +238,41 @@ export const CameraModal: React.FC<CameraModalProps> = ({
 
       <div className="relative w-full h-full sm:max-w-lg sm:h-[88vh] sm:max-h-[750px] bg-stone-950 sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-stone-800 shadow-2xl">
         
-        {/* Top bar */}
-        <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-          <div className="flex items-center gap-2 text-white/90 text-sm font-medium">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            <span>{capturedPhotoUrl ? 'Vista Previa' : 'Cámara en Vivo'}</span>
-          </div>
-
+        {/* Top bar with back button */}
+        <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-3.5 sm:p-4 bg-gradient-to-b from-black/85 via-black/40 to-transparent">
+          {/* Back button */}
           <button
+            type="button"
             onClick={() => {
               handleRetake();
               stopStream();
               onClose();
             }}
-            className="p-2 rounded-full bg-stone-900/80 text-white/80 hover:text-white hover:bg-stone-800 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-900/85 hover:bg-stone-800 text-stone-200 hover:text-white text-xs sm:text-sm font-medium transition border border-stone-800 backdrop-blur-sm"
+            aria-label="Volver al álbum"
           >
-            <X className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
+            <span>Volver</span>
+          </button>
+
+          {/* Status Indicator */}
+          <div className="flex items-center gap-2 text-white/90 text-xs sm:text-sm font-medium bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+            <span>{capturedPhotoUrl ? 'Vista Previa' : 'Cámara en Vivo'}</span>
+          </div>
+
+          {/* Close X button */}
+          <button
+            type="button"
+            onClick={() => {
+              handleRetake();
+              stopStream();
+              onClose();
+            }}
+            className="p-2 rounded-full bg-stone-900/85 text-white/80 hover:text-white hover:bg-stone-800 transition-colors border border-stone-800 backdrop-blur-sm"
+            title="Cerrar cámara"
+          >
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
@@ -342,21 +361,37 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                 maxLength={100}
                 className="w-full px-4 py-2.5 bg-stone-900/90 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-stone-600 transition"
               />
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRetake();
+                    stopStream();
+                    onClose();
+                  }}
+                  disabled={isUploading}
+                  className="py-3 px-3.5 rounded-xl bg-stone-900/80 text-stone-400 hover:text-white hover:bg-stone-800 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 border border-stone-800 transition disabled:opacity-50"
+                  title="Cancelar y volver al álbum"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden xs:inline">Volver</span>
+                </button>
+                
                 <button
                   type="button"
                   onClick={handleRetake}
                   disabled={isUploading}
-                  className="flex-1 py-3 px-4 rounded-xl bg-stone-900 text-stone-300 hover:text-white hover:bg-stone-800 text-sm font-medium flex items-center justify-center gap-2 border border-stone-800 transition disabled:opacity-50"
+                  className="flex-1 py-3 px-3 rounded-xl bg-stone-900 text-stone-300 hover:text-white hover:bg-stone-800 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 border border-stone-800 transition disabled:opacity-50"
                 >
                   <RotateCcw className="w-4 h-4" />
                   <span>Repetir</span>
                 </button>
+                
                 <button
                   type="button"
                   onClick={handleConfirmUpload}
                   disabled={isUploading}
-                  className="flex-1 py-3 px-4 rounded-xl bg-white text-stone-950 hover:bg-stone-200 text-sm font-semibold flex items-center justify-center gap-2 shadow-lg transition disabled:opacity-50"
+                  className="flex-1 py-3 px-3.5 rounded-xl bg-white text-stone-950 hover:bg-stone-200 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-lg transition disabled:opacity-50"
                 >
                   {isUploading ? (
                     <RefreshCw className="w-4 h-4 animate-spin text-stone-950" />

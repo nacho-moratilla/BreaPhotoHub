@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Camera, PlusCircle, ArrowRight, Radio, Image as ImageIcon, Calendar, Sparkles, RefreshCw, Lock, ChevronDown } from 'lucide-react';
+import { Camera, PlusCircle, Radio, Sparkles, RefreshCw, Lock, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
+import { AlbumMarqueeSection } from '@/components/AlbumMarqueeSection';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { Album } from '@/lib/types';
-import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { Album, Photo } from '@/lib/types';
+
+interface AlbumWithPhotos extends Album {
+  photos: Photo[];
+}
 
 export default function HomePage() {
-  const [albums, setAlbums] = useState<Album[]>([]);
+  const [albumsWithPhotos, setAlbumsWithPhotos] = useState<AlbumWithPhotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -19,28 +23,79 @@ export default function HomePage() {
       setIsAdmin(auth === 'true');
     }
 
-    async function loadAlbums() {
+    async function loadAlbumsAndPhotos() {
       if (!isSupabaseConfigured) {
+        // Fallback demo data with sample photos
+        const mock: AlbumWithPhotos[] = [
+          {
+            id: 'mock-1',
+            name: 'Fiestas Patronales de Brea 2026',
+            slug: 'fiestas-brea-2026',
+            cover_url: 'emoji:🎉',
+            event_date: '2026-08-15',
+            created_at: new Date().toISOString(),
+            photos: [
+              { id: 'p1', album_id: 'mock-1', url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80', filename: 'p1.jpg', uploaded_at: new Date().toISOString(), caption: 'Pregón de fiestas 🎆' },
+              { id: 'p2', album_id: 'mock-1', url: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80', filename: 'p2.jpg', uploaded_at: new Date().toISOString(), caption: 'Noche de orquesta 💃' },
+              { id: 'p3', album_id: 'mock-1', url: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop&q=80', filename: 'p3.jpg', uploaded_at: new Date().toISOString(), caption: 'La charanga en la plaza' },
+              { id: 'p4', album_id: 'mock-1', url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=80', filename: 'p4.jpg', uploaded_at: new Date().toISOString(), caption: 'Comida popular en la peña 🥘' },
+            ],
+          },
+          {
+            id: 'mock-2',
+            name: 'Romería de la Virgen',
+            slug: 'romeria-virgen-2026',
+            cover_url: 'emoji:🌾',
+            event_date: '2026-05-10',
+            created_at: new Date().toISOString(),
+            photos: [
+              { id: 'p5', album_id: 'mock-2', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80', filename: 'p5.jpg', uploaded_at: new Date().toISOString(), caption: 'Subida al monte' },
+              { id: 'p6', album_id: 'mock-2', url: 'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=800&auto=format&fit=crop&q=80', filename: 'p6.jpg', uploaded_at: new Date().toISOString(), caption: 'Día en el campo 🍷' },
+              { id: 'p7', album_id: 'mock-2', url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80', filename: 'p7.jpg', uploaded_at: new Date().toISOString(), caption: 'Vistas de Brea' },
+            ],
+          }
+        ];
+        setAlbumsWithPhotos(mock);
         setLoading(false);
         return;
       }
+
       try {
-        const { data, error } = await supabase
+        setLoading(true);
+        
+        // 1. Fetch all albums
+        const { data: albumsData, error: albumsError } = await supabase
           .from('albums')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data) {
-          setAlbums(data);
+        if (albumsError) throw albumsError;
+
+        if (albumsData) {
+          // 2. Fetch all photos grouped by album
+          const { data: photosData, error: photosError } = await supabase
+            .from('photos')
+            .select('*')
+            .order('uploaded_at', { ascending: false });
+
+          if (!photosError && photosData) {
+            const combined: AlbumWithPhotos[] = albumsData.map((album) => ({
+              ...album,
+              photos: photosData.filter((p) => p.album_id === album.id),
+            }));
+            setAlbumsWithPhotos(combined);
+          } else {
+            setAlbumsWithPhotos(albumsData.map((a) => ({ ...a, photos: [] })));
+          }
         }
       } catch (err) {
-        console.error('Error cargando álbumes:', err);
+        console.error('Error cargando álbumes y fotos para portada:', err);
       } finally {
         setLoading(false);
       }
     }
 
-    loadAlbums();
+    loadAlbumsAndPhotos();
   }, []);
 
   const scrollToAlbums = () => {
@@ -48,7 +103,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100">
+    <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 overflow-x-hidden">
       <Navbar />
 
       {/* Hero Section */}
@@ -58,7 +113,7 @@ export default function HomePage() {
           {/* Tag Pill */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-200/70 dark:bg-stone-800/70 border border-stone-300/60 dark:border-stone-700/60 text-xs font-semibold text-stone-800 dark:text-stone-200 mb-6 animate-fade-in">
             <Radio className="w-3.5 h-3.5 text-stone-900 dark:text-stone-100 animate-pulse" />
-            <span>Álbumes y Recuerdos de Brea</span>
+            <span>Recap Fotográfico en Vivo de Brea</span>
           </div>
 
           {/* Main Headline */}
@@ -77,7 +132,7 @@ export default function HomePage() {
               onClick={scrollToAlbums}
               className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all group cursor-pointer"
             >
-              <span>Explorar Álbumes</span>
+              <span>Explorar Momentos</span>
               <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
             </button>
 
@@ -94,34 +149,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Albums Grid Section */}
-        <section id="albumes" className="py-12 px-4 sm:px-6 max-w-6xl mx-auto border-t border-stone-200/80 dark:border-stone-800/80 scroll-mt-20">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-stone-950 dark:text-stone-50">
-                Todos los Álbumes
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                Selecciona un evento para ver todas sus fotos o añadir las tuyas
-              </p>
-            </div>
-            
-            {albums.length > 0 && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-stone-100 dark:bg-stone-850 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-750">
-                {albums.length} {albums.length === 1 ? 'álbum' : 'álbumes'}
-              </span>
-            )}
-          </div>
-
+        {/* Full-Width Albums Infinite Recap Sections (Mobbin Style) */}
+        <section id="albumes" className="w-full py-8 border-t border-stone-200/80 dark:border-stone-800/80 scroll-mt-16">
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3 text-stone-500">
+            <div className="py-24 flex flex-col items-center justify-center gap-3 text-stone-500">
               <RefreshCw className="w-6 h-6 animate-spin text-stone-700 dark:text-stone-300" />
-              <span className="text-sm font-medium">Cargando álbumes...</span>
+              <span className="text-sm font-medium">Cargando recuerdos en vivo...</span>
             </div>
-          ) : albums.length === 0 ? (
-            <div className="py-16 px-4 text-center border-2 border-dashed border-stone-200 dark:border-stone-800 rounded-3xl bg-white/50 dark:bg-stone-900/20 max-w-lg mx-auto">
+          ) : albumsWithPhotos.length === 0 ? (
+            <div className="max-w-lg mx-auto py-16 px-4 text-center border-2 border-dashed border-stone-200 dark:border-stone-800 rounded-3xl bg-white/50 dark:bg-stone-900/20 my-10">
               <div className="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center mx-auto mb-3 text-stone-400">
-                <ImageIcon className="w-6 h-6" />
+                <Camera className="w-6 h-6" />
               </div>
               <h3 className="text-base font-semibold text-stone-800 dark:text-stone-200 mb-1">
                 Aún no hay álbumes publicados
@@ -140,51 +178,13 @@ export default function HomePage() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {albums.map((album) => (
-                <Link
+            <div className="w-full flex flex-col">
+              {albumsWithPhotos.map((album, index) => (
+                <AlbumMarqueeSection
                   key={album.id}
-                  href={`/album/${album.slug}`}
-                  className="group p-4 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 hover:border-stone-400 dark:hover:border-stone-600 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
-                >
-                  <div>
-                    {isEmojiCover(album.cover_url) ? (
-                      <div className="aspect-video w-full rounded-2xl mb-3.5 bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-850 dark:to-stone-800 border border-stone-200/80 dark:border-stone-750 flex items-center justify-center text-4xl sm:text-5xl group-hover:scale-105 transition-transform duration-300 shadow-inner">
-                        <span className="filter drop-shadow-sm select-none">{getCoverEmoji(album.cover_url)}</span>
-                      </div>
-                    ) : album.cover_url ? (
-                      <div className="aspect-video w-full rounded-2xl overflow-hidden mb-3.5 bg-stone-100 dark:bg-stone-800">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={album.cover_url}
-                          alt={album.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    ) : (
-                      <div className="aspect-video w-full rounded-2xl mb-3.5 bg-stone-100 dark:bg-stone-800 flex flex-col items-center justify-center text-stone-400 group-hover:bg-stone-200 dark:group-hover:bg-stone-750 transition-colors">
-                        <ImageIcon className="w-8 h-8 mb-1" />
-                        <span className="text-[11px] font-medium">BreaPhotoHub</span>
-                      </div>
-                    )}
-                    
-                    <h3 className="font-bold text-base text-stone-950 dark:text-stone-50 truncate group-hover:text-stone-600 dark:group-hover:text-stone-300 transition">
-                      {album.name}
-                    </h3>
-                    
-                    {album.event_date && (
-                      <p className="text-xs text-stone-500 flex items-center gap-1.5 mt-1 font-medium">
-                        <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                        <span>{formatDate(album.event_date)}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs font-semibold text-stone-600 dark:text-stone-400 group-hover:text-stone-950 dark:group-hover:text-white transition">
-                    <span>Ver fotos y participar</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
+                  album={album}
+                  reverse={index % 2 === 1}
+                />
               ))}
             </div>
           )}
@@ -192,7 +192,7 @@ export default function HomePage() {
       </main>
 
       {/* Minimal Footer with discreet Admin Link */}
-      <footer className="border-t border-stone-200 dark:border-stone-800 py-8 px-4 text-center text-xs text-stone-500 mt-16 flex flex-col items-center gap-3">
+      <footer className="border-t border-stone-200 dark:border-stone-800 py-10 px-4 text-center text-xs text-stone-500 mt-16 flex flex-col items-center gap-3 bg-white/50 dark:bg-stone-900/30">
         <div>
           <p className="font-medium text-stone-700 dark:text-stone-400">
             BreaPhotoHub — Recuerdos y Momentos de Brea

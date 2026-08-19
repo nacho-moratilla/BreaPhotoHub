@@ -247,6 +247,7 @@ export default function AlbumAdminManagePage({
                   slug={album!.slug}
                   albumName={album!.name}
                   eventDate={album!.event_date}
+                  eventEndDate={album!.event_end_date}
                 />
               </div>
 
@@ -285,9 +286,9 @@ export default function AlbumAdminManagePage({
 
                     {album!.event_date && (
                       <div>
-                        <span className="text-xs text-stone-400 block">Fecha</span>
+                        <span className="text-xs text-stone-400 block">Fechas del Evento</span>
                         <span className="font-medium text-stone-700 dark:text-stone-300">
-                          {formatDate(album!.event_date)}
+                          {formatDateRange(album!.event_date, album!.event_end_date)}
                         </span>
                       </div>
                     )}

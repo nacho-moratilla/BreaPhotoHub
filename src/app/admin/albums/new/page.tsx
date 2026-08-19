@@ -24,6 +24,7 @@ export default function NewAlbumPage() {
   const [slug, setSlug] = useState('');
   const [customSlugEdited, setCustomSlugEdited] = useState(false);
   const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eventEndDate, setEventEndDate] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   
   // Cover selection: 'photo' | 'emoji' | 'none'
@@ -110,6 +111,7 @@ export default function NewAlbumPage() {
             name: name.trim(),
             slug: finalSlug,
             event_date: eventDate || null,
+            event_end_date: eventEndDate || null,
             cover_url: finalCoverValue,
             admin_password: adminPassword.trim() || 'admin123',
           });
@@ -198,17 +200,33 @@ export default function NewAlbumPage() {
               </div>
             </div>
 
-            {/* Event Date */}
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
-                Fecha del Evento
-              </label>
-              <input
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:border-stone-500 transition"
-              />
+            {/* Event Dates (Start and Optional End Date) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
+                  Fecha de Comienzo *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:border-stone-500 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
+                  Fecha de Finalización <span className="text-stone-400 font-normal lowercase">(opcional)</span>
+                </label>
+                <input
+                  type="date"
+                  value={eventEndDate}
+                  min={eventDate}
+                  onChange={(e) => setEventEndDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:border-stone-500 transition"
+                />
+              </div>
             </div>
 
             {/* Cover Selector: Photo vs Emoji */}

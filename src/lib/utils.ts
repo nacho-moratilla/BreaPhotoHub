@@ -35,6 +35,50 @@ export function formatDate(dateString: string | null | undefined): string {
   }
 }
 
+/**
+ * Formats a date range elegantly (e.g. "15 - 20 de agosto de 2026")
+ */
+export function formatDateRange(
+  startDateStr: string | null | undefined,
+  endDateStr?: string | null | undefined
+): string {
+  if (!startDateStr && !endDateStr) return '';
+  if (!endDateStr || startDateStr === endDateStr) return formatDate(startDateStr);
+  if (!startDateStr) return formatDate(endDateStr);
+
+  try {
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return `${startDateStr} - ${endDateStr}`;
+    }
+
+    const startDay = start.getDate();
+    const endDay = end.getDate();
+    const startMonth = start.getMonth();
+    const endMonth = end.getMonth();
+    const startYear = start.getFullYear();
+    const endYear = end.getFullYear();
+
+    const monthNames = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+
+    if (startYear === endYear && startMonth === endMonth) {
+      return `${startDay} - ${endDay} de ${monthNames[startMonth]} de ${startYear}`;
+    } else if (startYear === endYear) {
+      return `${startDay} de ${monthNames[startMonth]} - ${endDay} de ${monthNames[endMonth]} de ${startYear}`;
+    } else {
+      return `${startDay} de ${monthNames[startMonth]} de ${startYear} - ${endDay} de ${monthNames[endMonth]} de ${endYear}`;
+    }
+  } catch {
+    return `${startDateStr} - ${endDateStr}`;
+  }
+}
+
+
 export function formatTimeAgo(dateString: string): string {
   try {
     const date = new Date(dateString);

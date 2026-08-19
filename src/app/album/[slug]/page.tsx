@@ -13,7 +13,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, Photo, ToastMessage } from '@/lib/types';
-import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { formatDateRange, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 export default function AlbumPublicPage({
   params,
@@ -316,7 +316,7 @@ export default function AlbumPublicPage({
               {album?.event_date && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-semibold text-stone-700 dark:text-stone-300 mb-4">
                   <Calendar className="w-3.5 h-3.5 text-stone-500" />
-                  <span>{formatDate(album.event_date)}</span>
+                  <span>{formatDateRange(album.event_date, album.event_end_date)}</span>
                 </div>
               )}
 

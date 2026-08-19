@@ -4,6 +4,7 @@ export interface Album {
   slug: string;
   cover_url: string | null;
   event_date: string | null;
+  event_end_date?: string | null;
   admin_password?: string;
   created_at: string;
   photos_count?: number;

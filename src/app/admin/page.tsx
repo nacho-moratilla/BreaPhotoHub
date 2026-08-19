@@ -20,7 +20,7 @@ import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, ToastMessage } from '@/lib/types';
-import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { formatDateRange, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -280,7 +280,7 @@ export default function AdminDashboardPage() {
                             {album.event_date && (
                               <p className="text-xs text-stone-500 flex items-center gap-1.5 mt-0.5 font-medium">
                                 <Calendar className="w-3.5 h-3.5" />
-                                <span>{formatDate(album.event_date)}</span>
+                                <span>{formatDateRange(album.event_date, album.event_end_date)}</span>
                               </p>
                             )}
                           </div>

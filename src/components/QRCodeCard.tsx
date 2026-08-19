@@ -3,18 +3,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
 import { Download, Copy, Check, Printer, ExternalLink, Radio } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDateRange } from '@/lib/utils';
 
 interface QRCodeCardProps {
   slug: string;
   albumName: string;
   eventDate?: string | null;
+  eventEndDate?: string | null;
 }
 
 export const QRCodeCard: React.FC<QRCodeCardProps> = ({
   slug,
   albumName,
   eventDate,
+  eventEndDate,
 }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -89,7 +91,7 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
 
         {eventDate && (
           <p className="text-xs text-stone-500 font-medium mb-6">
-            {formatDate(eventDate)}
+            {formatDateRange(eventDate, eventEndDate)}
           </p>
         )}
 

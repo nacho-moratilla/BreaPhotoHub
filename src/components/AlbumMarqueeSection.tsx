@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Calendar, Camera, ImageIcon, Sparkles } from 'lucide-react';
 import { Album, Photo } from '@/lib/types';
-import { formatDate, formatTimeAgo, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { formatDateRange, formatTimeAgo, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 interface AlbumWithPhotos extends Album {
   photos: Photo[];
@@ -64,7 +64,7 @@ export const AlbumMarqueeSection: React.FC<AlbumMarqueeSectionProps> = ({
             {album.event_date && (
               <p className="text-xs sm:text-sm text-stone-500 flex items-center gap-1.5 mt-1 font-medium">
                 <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                <span>{formatDate(album.event_date)}</span>
+                <span>{formatDateRange(album.event_date, album.event_end_date)}</span>
               </p>
             )}
           </div>

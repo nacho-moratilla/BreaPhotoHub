@@ -10,9 +10,13 @@ CREATE TABLE IF NOT EXISTS public.albums (
   slug TEXT UNIQUE NOT NULL,
   cover_url TEXT,
   event_date DATE,
+  event_end_date DATE,
   admin_password TEXT NOT NULL DEFAULT 'admin123',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Si la tabla ya fue creada anteriormente, añade la columna de fecha de fin:
+ALTER TABLE public.albums ADD COLUMN IF NOT EXISTS event_end_date DATE;
 
 -- 2. TABLA DE FOTOS
 CREATE TABLE IF NOT EXISTS public.photos (

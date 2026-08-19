@@ -25,7 +25,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, Photo, ToastMessage } from '@/lib/types';
-import { formatDate, isEmojiCover, getCoverEmoji, compressImage } from '@/lib/utils';
+import { formatDateRange, isEmojiCover, getCoverEmoji, compressImage } from '@/lib/utils';
 
 const PRESET_EMOJIS = [
   '🎉', '🍷', '💃', '🌾', '⛪', '🎆', 

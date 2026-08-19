@@ -38,6 +38,13 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Strict validation: Reject videos
+    if (!file.type.startsWith('image/') || file.type.startsWith('video/')) {
+      alert('Solo se permite subir fotografías. Los archivos de vídeo no están permitidos.');
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+      return;
+    }
+
     try {
       setUploadProgress('Procesando foto...');
       const compressed = await compressImage(file, 2048, 0.90);
@@ -92,18 +99,33 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     }
   };
 
-  // Handle gallery / file selection (supports multi-upload)
+  // Handle gallery / file selection (supports multi-upload, image-only)
   const handleGalleryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const rawFiles = e.target.files;
+    if (!rawFiles || rawFiles.length === 0) return;
+
+    // Filter strictly for image files only
+    const imageFiles = Array.from(rawFiles).filter(
+      (f) => f.type.startsWith('image/') && !f.type.startsWith('video/')
+    );
+
+    if (imageFiles.length === 0) {
+      alert('No has seleccionado ninguna imagen válida. Los vídeos no están permitidos.');
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
+      return;
+    }
+
+    if (imageFiles.length < rawFiles.length) {
+      alert('Se han descartado los archivos de vídeo seleccionados. Solo se subirán las fotos.');
+    }
 
     try {
       setIsUploading(true);
-      const total = files.length;
+      const total = imageFiles.length;
       const preparedFiles: { blob: Blob; filename: string }[] = [];
 
       for (let i = 0; i < total; i++) {
-        const file = files[i];
+        const file = imageFiles[i];
         setUploadProgress(`Procesando imagen ${i + 1} de ${total}...`);
         const compressed = await compressImage(file, 2048, 0.90);
         preparedFiles.push({
@@ -127,22 +149,22 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      {/* Native Camera input (directly launches device camera app) */}
+      {/* Native Camera input (strictly captures photo mode only) */}
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/jpg"
         capture="environment"
         onChange={handleNativeCameraCaptured}
         className="hidden"
         disabled={disabled || isUploading}
       />
 
-      {/* Gallery file picker input */}
+      {/* Gallery file picker input (strictly accepts images only) */}
       <input
         ref={galleryInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/jpg"
         multiple
         onChange={handleGalleryChange}
         className="hidden"

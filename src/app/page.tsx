@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Camera, PlusCircle, ArrowRight, Radio, Image as ImageIcon, Calendar, Sparkles, RefreshCw } from 'lucide-react';
+import { Camera, PlusCircle, ArrowRight, Radio, Image as ImageIcon, Calendar, Sparkles, RefreshCw, Lock, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album } from '@/lib/types';
@@ -11,8 +11,14 @@ import { formatDate } from '@/lib/utils';
 export default function HomePage() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const auth = sessionStorage.getItem('breaphoto_admin_auth');
+      setIsAdmin(auth === 'true');
+    }
+
     async function loadAlbums() {
       if (!isSupabaseConfigured) {
         setLoading(false);
@@ -36,6 +42,10 @@ export default function HomePage() {
 
     loadAlbums();
   }, []);
+
+  const scrollToAlbums = () => {
+    document.getElementById('albumes')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100">
@@ -63,32 +73,36 @@ export default function HomePage() {
 
           {/* Call to action buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-8">
-            <Link
-              href="/admin/albums/new"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all group"
+            <button
+              onClick={scrollToAlbums}
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all group cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Crear Nuevo Álbum</span>
-            </Link>
+              <span>Explorar Álbumes</span>
+              <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+            </button>
 
-            <Link
-              href="/admin"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 font-medium text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
-            >
-              <span>Panel de Administración</span>
-            </Link>
+            {/* Admin only action in hero */}
+            {isAdmin && (
+              <Link
+                href="/admin/albums/new"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 font-medium text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+              >
+                <PlusCircle className="w-4 h-4 text-emerald-500" />
+                <span>Crear Álbum</span>
+              </Link>
+            )}
           </div>
         </section>
 
-        {/* Albums Grid Section - Directly Visible */}
-        <section className="py-8 px-4 sm:px-6 max-w-6xl mx-auto border-t border-stone-200/80 dark:border-stone-800/80">
+        {/* Albums Grid Section */}
+        <section id="albumes" className="py-12 px-4 sm:px-6 max-w-6xl mx-auto border-t border-stone-200/80 dark:border-stone-800/80 scroll-mt-20">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-stone-950 dark:text-stone-50">
                 Todos los Álbumes
               </h2>
               <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-                Explora las galerías de fotos y eventos de Brea
+                Selecciona un evento para ver todas sus fotos o añadir las tuyas
               </p>
             </div>
             
@@ -110,18 +124,20 @@ export default function HomePage() {
                 <ImageIcon className="w-6 h-6" />
               </div>
               <h3 className="text-base font-semibold text-stone-800 dark:text-stone-200 mb-1">
-                Aún no hay álbumes creados
+                Aún no hay álbumes publicados
               </h3>
               <p className="text-xs sm:text-sm text-stone-500 mb-5">
-                Sé el primero en crear un álbum para un evento o fiesta en Brea.
+                Vuelve pronto para revivir los mejores recuerdos de Brea.
               </p>
-              <Link
-                href="/admin/albums/new"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-xs sm:text-sm font-semibold hover:opacity-90 transition"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Crear Primer Álbum</span>
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin/albums/new"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-xs sm:text-sm font-semibold hover:opacity-90 transition"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Crear Primer Álbum</span>
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -161,7 +177,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs font-semibold text-stone-600 dark:text-stone-400 group-hover:text-stone-950 dark:group-hover:text-white transition">
-                    <span>Ver fotos y subir</span>
+                    <span>Ver fotos y participar</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
@@ -171,14 +187,26 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Minimal Footer */}
-      <footer className="border-t border-stone-200 dark:border-stone-800 py-8 px-4 text-center text-xs text-stone-500 mt-16">
-        <p className="font-medium text-stone-700 dark:text-stone-400">
-          BreaPhotoHub — Recuerdos y Momentos de Brea
-        </p>
-        <p className="mt-1">
-          Plataforma comunitaria de álbumes de fotos para fiestas, eventos y celebraciones.
-        </p>
+      {/* Minimal Footer with discreet Admin Link */}
+      <footer className="border-t border-stone-200 dark:border-stone-800 py-8 px-4 text-center text-xs text-stone-500 mt-16 flex flex-col items-center gap-3">
+        <div>
+          <p className="font-medium text-stone-700 dark:text-stone-400">
+            BreaPhotoHub — Recuerdos y Momentos de Brea
+          </p>
+          <p className="mt-0.5">
+            Plataforma comunitaria de álbumes de fotos para fiestas y eventos.
+          </p>
+        </div>
+
+        <div className="pt-2">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors"
+          >
+            <Lock className="w-3 h-3" />
+            <span>Acceso Administración</span>
+          </Link>
+        </div>
       </footer>
     </div>
   );

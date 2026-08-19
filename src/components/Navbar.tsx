@@ -1,15 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Camera, PlusCircle, ShieldCheck } from 'lucide-react';
+import { Camera, PlusCircle, ShieldCheck, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   currentAlbumName?: string;
   showAdminLink?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentAlbumName, showAdminLink = true }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentAlbumName, showAdminLink = false }) => {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const auth = sessionStorage.getItem('breaphoto_admin_auth');
+      setIsAdmin(auth === 'true');
+    }
+  }, []);
+
   return (
     <header className="sticky top-0 z-30 w-full border-b border-stone-200/80 dark:border-stone-800/80 bg-stone-50/80 dark:bg-stone-950/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -33,24 +42,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentAlbumName, showAdminLink 
           </div>
         )}
 
-        {/* Actions */}
+        {/* Actions - Only visible if logged in as Admin or explicitly in admin section */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/admin/albums/new"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Crear Álbum</span>
-          </Link>
-          
-          {showAdminLink && (
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-sm"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Panel</span> Admin
-            </Link>
+          {(isAdmin || showAdminLink) && (
+            <>
+              <Link
+                href="/admin/albums/new"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white rounded-lg hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Crear Álbum</span>
+              </Link>
+              
+              <Link
+                href="/admin"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors shadow-sm"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="hidden sm:inline">Panel</span> Admin
+              </Link>
+            </>
           )}
         </div>
       </div>

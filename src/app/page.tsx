@@ -6,7 +6,7 @@ import { Camera, PlusCircle, ArrowRight, Radio, Image as ImageIcon, Calendar, Sp
 import { Navbar } from '@/components/Navbar';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 export default function HomePage() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -148,7 +148,11 @@ export default function HomePage() {
                   className="group p-4 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 hover:border-stone-400 dark:hover:border-stone-600 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
                 >
                   <div>
-                    {album.cover_url ? (
+                    {isEmojiCover(album.cover_url) ? (
+                      <div className="aspect-video w-full rounded-2xl mb-3.5 bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-850 dark:to-stone-800 border border-stone-200/80 dark:border-stone-750 flex items-center justify-center text-4xl sm:text-5xl group-hover:scale-105 transition-transform duration-300 shadow-inner">
+                        <span className="filter drop-shadow-sm select-none">{getCoverEmoji(album.cover_url)}</span>
+                      </div>
+                    ) : album.cover_url ? (
                       <div className="aspect-video w-full rounded-2xl overflow-hidden mb-3.5 bg-stone-100 dark:bg-stone-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img

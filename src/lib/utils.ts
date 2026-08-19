@@ -175,3 +175,23 @@ export async function downloadAlbumAsZip(
 
   saveAs(content, `${slugify(albumName) || 'fotos'}-album-completo.zip`);
 }
+
+/**
+ * Checks if a cover string is an emoji representation
+ */
+export function isEmojiCover(cover: string | null | undefined): boolean {
+  if (!cover) return false;
+  return cover.startsWith('emoji:') || (!cover.startsWith('http://') && !cover.startsWith('https://') && !cover.startsWith('/'));
+}
+
+/**
+ * Extracts the clean emoji from a cover string
+ */
+export function getCoverEmoji(cover: string | null | undefined): string {
+  if (!cover) return '📸';
+  if (cover.startsWith('emoji:')) {
+    return cover.replace('emoji:', '').trim();
+  }
+  return cover.trim();
+}
+

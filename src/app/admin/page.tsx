@@ -20,7 +20,7 @@ import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, ToastMessage } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -257,16 +257,33 @@ export default function AdminDashboardPage() {
                     <div>
                       {/* Top Header of Card */}
                       <div className="flex items-start justify-between gap-3 mb-3">
-                        <div>
-                          <h3 className="font-bold text-lg text-stone-950 dark:text-stone-100 tracking-tight">
-                            {album.name}
-                          </h3>
-                          {album.event_date && (
-                            <p className="text-xs text-stone-500 flex items-center gap-1.5 mt-1 font-medium">
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>{formatDate(album.event_date)}</span>
-                            </p>
+                        <div className="flex items-center gap-3">
+                          {isEmojiCover(album.cover_url) ? (
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-800 dark:to-stone-750 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-2xl shrink-0 shadow-sm select-none">
+                              {getCoverEmoji(album.cover_url)}
+                            </div>
+                          ) : album.cover_url ? (
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 shrink-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={album.cover_url} alt={album.name} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-12 h-12 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-400 shrink-0">
+                              <ImageIcon className="w-5 h-5" />
+                            </div>
                           )}
+
+                          <div>
+                            <h3 className="font-bold text-lg text-stone-950 dark:text-stone-100 tracking-tight">
+                              {album.name}
+                            </h3>
+                            {album.event_date && (
+                              <p className="text-xs text-stone-500 flex items-center gap-1.5 mt-0.5 font-medium">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>{formatDate(album.event_date)}</span>
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <button

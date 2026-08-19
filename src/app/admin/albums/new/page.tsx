@@ -3,12 +3,19 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Image as ImageIcon, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Image as ImageIcon, Loader2, Sparkles, Smile, UploadCloud, Check } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { slugify, compressImage } from '@/lib/utils';
+import { slugify, compressImage, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 import { ToastMessage } from '@/lib/types';
+
+const PRESET_EMOJIS = [
+  '🎉', '🍷', '💃', '🌾', '⛪', '🎆', 
+  '🍻', '🥘', '🎂', '⚽', '🎸', '🌲', 
+  '👑', '🐂', '🥳', '🏆', '🎶', '📸', 
+  '🕺', '🌻', '🍇', '🔔', '🎭', '🎈'
+];
 
 export default function NewAlbumPage() {
   const router = useRouter();
@@ -19,6 +26,10 @@ export default function NewAlbumPage() {
   const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
   const [adminPassword, setAdminPassword] = useState('');
   
+  // Cover selection: 'photo' | 'emoji' | 'none'
+  const [coverType, setCoverType] = useState<'photo' | 'emoji' | 'none'>('emoji');
+  const [selectedEmoji, setSelectedEmoji] = useState('🎉');
+  const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
@@ -49,6 +60,7 @@ export default function NewAlbumPage() {
     setCoverFile(file);
     const previewUrl = URL.createObjectURL(file);
     setCoverPreview(previewUrl);
+    setCoverType('photo');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,9 +79,12 @@ export default function NewAlbumPage() {
     try {
       setIsSubmitting(true);
 
-      let uploadedCoverUrl: string | null = null;
+      let finalCoverValue: string | null = null;
 
-      if (isSupabaseConfigured && coverFile) {
+      if (coverType === 'emoji') {
+        const emoji = customEmojiInput.trim() || selectedEmoji || '🎉';
+        finalCoverValue = `emoji:${emoji}`;
+      } else if (coverType === 'photo' && coverFile && isSupabaseConfigured) {
         const compressedCover = await compressImage(coverFile, 1600, 0.85);
         const filePath = `covers/${finalSlug}-${Date.now()}.jpg`;
 
@@ -84,7 +99,7 @@ export default function NewAlbumPage() {
           const { data: publicUrlData } = supabase.storage
             .from('album-photos')
             .getPublicUrl(filePath);
-          uploadedCoverUrl = publicUrlData.publicUrl;
+          finalCoverValue = publicUrlData.publicUrl;
         }
       }
 
@@ -95,7 +110,7 @@ export default function NewAlbumPage() {
             name: name.trim(),
             slug: finalSlug,
             event_date: eventDate || null,
-            cover_url: uploadedCoverUrl,
+            cover_url: finalCoverValue,
             admin_password: adminPassword.trim() || 'admin123',
           });
 
@@ -122,7 +137,7 @@ export default function NewAlbumPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col pb-16">
-      <Navbar />
+      <Navbar showAdminLink={true} />
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
 
       <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-8">
@@ -140,7 +155,7 @@ export default function NewAlbumPage() {
               Crear Nuevo Álbum
             </h1>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Configura los detalles del evento para generar su código QR único.
+              Configura el evento, su enlace y elige una foto de portada o un emoticono.
             </p>
           </div>
 
@@ -153,7 +168,7 @@ export default function NewAlbumPage() {
               <input
                 type="text"
                 required
-                placeholder="Ej: Boda de Laura & Carlos, 18 Cumpleaños de Lucas..."
+                placeholder="Ej: Fiestas Patronales de Brea, Romería, Cumpleaños..."
                 value={name}
                 onChange={handleNameChange}
                 className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-sm focus:outline-none focus:border-stone-500 transition"
@@ -172,7 +187,7 @@ export default function NewAlbumPage() {
                 <input
                   type="text"
                   required
-                  placeholder="boda-laura-carlos"
+                  placeholder="fiestas-brea-2026"
                   value={slug}
                   onChange={(e) => {
                     setSlug(slugify(e.target.value));
@@ -196,43 +211,137 @@ export default function NewAlbumPage() {
               />
             </div>
 
-            {/* Cover Image Upload */}
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
-                Foto de Portada / Banner (Opcional)
+            {/* Cover Selector: Photo vs Emoji */}
+            <div className="pt-2">
+              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-3">
+                Portada del Álbum
               </label>
-              {coverPreview ? (
-                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 mb-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={coverPreview}
-                    alt="Vista previa de portada"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCoverFile(null);
-                      setCoverPreview(null);
-                    }}
-                    className="absolute top-2 right-2 px-2.5 py-1 bg-black/70 text-white text-xs rounded-lg hover:bg-black transition"
-                  >
-                    Quitar
-                  </button>
+
+              {/* Selector Tabs */}
+              <div className="grid grid-cols-3 gap-2 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setCoverType('emoji')}
+                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                    coverType === 'emoji'
+                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  <Smile className="w-3.5 h-3.5" />
+                  <span>Emoticono</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCoverType('photo')}
+                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                    coverType === 'photo'
+                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>Foto Portada</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCoverType('none')}
+                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                    coverType === 'none'
+                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
+                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  <span>Sin Portada</span>
+                </button>
+              </div>
+
+              {/* Emoji Choice UI */}
+              {coverType === 'emoji' && (
+                <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                      Elige un icono para el evento:
+                    </span>
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-xl shadow-sm">
+                      {customEmojiInput.trim() || selectedEmoji}
+                    </div>
+                  </div>
+
+                  {/* Preset Emojis Grid */}
+                  <div className="grid grid-cols-8 gap-1.5 sm:gap-2">
+                    {PRESET_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setSelectedEmoji(emoji);
+                          setCustomEmojiInput('');
+                        }}
+                        className={`w-full aspect-square rounded-xl flex items-center justify-center text-lg hover:scale-110 transition ${
+                          selectedEmoji === emoji && !customEmojiInput
+                            ? 'bg-stone-900 text-white dark:bg-stone-100 ring-2 ring-stone-900 dark:ring-white scale-105'
+                            : 'bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700/80'
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom Emoji Input */}
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="O escribe aquí cualquier otro emoji (ej: 🎆, 🏇, 🎪)..."
+                      value={customEmojiInput}
+                      onChange={(e) => setCustomEmojiInput(e.target.value)}
+                      maxLength={4}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-500 transition"
+                    />
+                  </div>
                 </div>
-              ) : (
-                <label className="border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50 transition">
-                  <ImageIcon className="w-8 h-8 text-stone-400 mb-2" />
-                  <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
-                    Pulsa para subir imagen de portada
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleCoverSelect}
-                    className="hidden"
-                  />
-                </label>
+              )}
+
+              {/* Photo Upload UI */}
+              {coverType === 'photo' && (
+                <div>
+                  {coverPreview ? (
+                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 mb-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={coverPreview}
+                        alt="Vista previa de portada"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCoverFile(null);
+                          setCoverPreview(null);
+                        }}
+                        className="absolute top-2 right-2 px-2.5 py-1 bg-black/70 text-white text-xs rounded-lg hover:bg-black transition"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50 transition">
+                      <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
+                      <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                        Pulsa para subir archivo de foto de portada
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               )}
             </div>
 
@@ -240,7 +349,7 @@ export default function NewAlbumPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-4 py-4 px-6 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:opacity-90 active:scale-[0.99] transition disabled:opacity-50 cursor-pointer"
+              className="w-full mt-6 py-4 px-6 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:opacity-90 active:scale-[0.99] transition disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -250,7 +359,7 @@ export default function NewAlbumPage() {
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  <span>Crear y Generar Código QR</span>
+                  <span>Crear Álbum y Generar QR</span>
                 </>
               )}
             </button>

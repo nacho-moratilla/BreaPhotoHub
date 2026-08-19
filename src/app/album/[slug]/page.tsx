@@ -13,7 +13,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, Photo, ToastMessage } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isEmojiCover, getCoverEmoji } from '@/lib/utils';
 
 export default function AlbumPublicPage({
   params,
@@ -292,8 +292,8 @@ export default function AlbumPublicPage({
           {/* Event Header Banner */}
           <div className="relative rounded-3xl overflow-hidden bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-sm p-6 sm:p-10 mb-8 text-center">
             
-            {/* Background Cover Image Backdrop if present */}
-            {album?.cover_url && (
+            {/* Background Cover Image Backdrop if photo present */}
+            {album?.cover_url && !isEmojiCover(album.cover_url) && (
               <div className="absolute inset-0 z-0 opacity-15 dark:opacity-20 overflow-hidden pointer-events-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -305,6 +305,13 @@ export default function AlbumPublicPage({
             )}
 
             <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+              {/* Event Emoji Icon if emoji cover is set */}
+              {album?.cover_url && isEmojiCover(album.cover_url) && (
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-850 dark:to-stone-800 border border-stone-200 dark:border-stone-750 flex items-center justify-center text-4xl sm:text-5xl shadow-md mb-4 animate-bounce-subtle select-none">
+                  {getCoverEmoji(album.cover_url)}
+                </div>
+              )}
+
               {/* Event Date badge */}
               {album?.event_date && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-semibold text-stone-700 dark:text-stone-300 mb-4">

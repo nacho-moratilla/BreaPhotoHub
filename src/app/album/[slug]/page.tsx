@@ -321,13 +321,9 @@ export default function AlbumPublicPage({
               )}
 
               {/* Event Name */}
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-950 dark:text-stone-50 mb-3">
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-950 dark:text-stone-50 mb-6">
                 {album?.name}
               </h1>
-
-              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 max-w-md mb-8">
-                ¡Haz fotos de cada momento y compártelas en vivo con todos los invitados!
-              </p>
 
               {/* Upload & Camera Trigger Bar */}
               <PhotoUploader onUploadPhotos={handleUploadPhotos} />

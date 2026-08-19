@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Camera, RefreshCw, X, Check, RotateCcw, Sparkles } from 'lucide-react';
+import { Camera, RefreshCw, X, Check, RotateCcw, ImagePlus, AlertCircle } from 'lucide-react';
 import { compressImage } from '@/lib/utils';
 
 interface CameraModalProps {
@@ -17,8 +17,10 @@ export const CameraModal: React.FC<CameraModalProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const nativeCameraInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const [isInitializing, setIsInitializing] = useState(true);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
@@ -28,69 +30,98 @@ export const CameraModal: React.FC<CameraModalProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
-  // Stop camera tracks
+  // Stop media stream tracks cleanly without triggering re-renders
   const stopStream = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch (e) {
+          console.warn('Error parando track de cámara:', e);
+        }
+      });
+      streamRef.current = null;
     }
-  }, [stream]);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
 
-  // Start camera stream
-  const startCamera = useCallback(async () => {
+  // Initialize and attach camera stream
+  const startCamera = useCallback(async (mode: 'environment' | 'user') => {
     stopStream();
+    setIsInitializing(true);
     setCameraError(null);
 
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('La cámara no está soportada en este navegador.');
-      }
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setCameraError('Tu navegador no permite acceso directo a la cámara web.');
+      setIsInitializing(false);
+      return;
+    }
 
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-      setHasMultipleCameras(videoDevices.length > 1);
+    try {
+      // Check available cameras
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+        setHasMultipleCameras(videoDevices.length > 1);
+      } catch (devErr) {
+        console.warn('No se pudieron enumerar dispositivos:', devErr);
+      }
 
       let mediaStream: MediaStream;
 
       try {
-        // Intento 1: Pedir la cámara específica (trasera o frontal)
+        // Attempt 1: Request facing mode
         mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: facingMode } },
+          video: {
+            facingMode: { ideal: mode },
+          },
           audio: false,
         });
-      } catch (e) {
-        // Intento 2: Fallback genérico si el dispositivo rechaza el facingMode
-        console.warn('Fallback a cámara genérica', e);
+      } catch (err1) {
+        console.warn('Fallo intento 1, probando cámara básica:', err1);
+        // Attempt 2: Request basic video
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false,
         });
       }
 
-      setStream(mediaStream);
+      streamRef.current = mediaStream;
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.muted = true;
+        
+        videoRef.current.onloadedmetadata = async () => {
+          try {
+            await videoRef.current?.play();
+          } catch (playErr) {
+            console.warn('Error al reproducir video feed:', playErr);
+          }
+        };
       }
     } catch (err: any) {
-      console.error('Error al acceder a la cámara:', err);
-      let errorMsg = 'No se pudo acceder a la cámara.';
+      console.error('Error al inicializar cámara:', err);
+      let message = 'No se pudo acceder a la cámara en vivo.';
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        errorMsg = 'Permiso denegado. Asegúrate de permitir el acceso a la cámara en el navegador.';
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        errorMsg = 'No se encontró ningún dispositivo de cámara conectado.';
+        message = 'Permiso denegado. Permite el acceso a la cámara o usa la cámara nativa abajo.';
       } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-        errorMsg = 'La cámara ya está siendo usada por otra aplicación.';
+        message = 'La cámara está ocupada por otra app (WhatsApp, Instagram, etc.).';
       }
-      setCameraError(errorMsg);
+      setCameraError(message);
+    } finally {
+      setIsInitializing(false);
     }
-  }, [facingMode, stopStream]);
+  }, [stopStream]);
 
-  // Handle open/close lifecycle
+  // Open/Close effect
   useEffect(() => {
     if (isOpen && !capturedPhotoUrl) {
-      startCamera();
+      startCamera(facingMode);
     } else {
       stopStream();
     }
@@ -98,41 +129,43 @@ export const CameraModal: React.FC<CameraModalProps> = ({
     return () => {
       stopStream();
     };
-  }, [isOpen, startCamera, stopStream, capturedPhotoUrl]);
+  }, [isOpen, facingMode, startCamera, stopStream, capturedPhotoUrl]);
 
-  // Flip camera between front & back
+  // Switch facing mode
   const handleFlipCamera = () => {
-    setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextMode);
   };
 
-  // Capture current frame from video stream
+  // Capture frame from video
   const takePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    canvas.width = video.videoWidth || 1280;
-    canvas.height = video.videoHeight || 720;
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+
+    canvas.width = width;
+    canvas.height = height;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // If using front camera, mirror horizontally for natural feel
     if (facingMode === 'user') {
-      ctx.translate(canvas.width, 0);
+      ctx.translate(width, 0);
       ctx.scale(-1, 1);
     }
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, width, height);
 
-    // Trigger flash animation
+    // Shutter flash animation
     setIsShutterActive(true);
-    setTimeout(() => setIsShutterActive(false), 400);
+    setTimeout(() => setIsShutterActive(false), 300);
 
     canvas.toBlob(async (blob) => {
       if (blob) {
-        // Compress photo right after capture
         const compressed = await compressImage(blob, 1920, 0.88);
         const previewUrl = URL.createObjectURL(compressed);
         setCapturedBlob(compressed);
@@ -142,7 +175,29 @@ export const CameraModal: React.FC<CameraModalProps> = ({
     }, 'image/jpeg', 0.95);
   };
 
-  // Reset captured state and restart camera
+  // Handle native camera file capture fallback
+  const handleNativeCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsInitializing(true);
+      const compressed = await compressImage(file, 1920, 0.88);
+      const previewUrl = URL.createObjectURL(compressed);
+      setCapturedBlob(compressed);
+      setCapturedPhotoUrl(previewUrl);
+      stopStream();
+    } catch (err) {
+      console.error('Error procesando foto nativa:', err);
+    } finally {
+      setIsInitializing(false);
+      if (nativeCameraInputRef.current) {
+        nativeCameraInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Retake
   const handleRetake = () => {
     if (capturedPhotoUrl) {
       URL.revokeObjectURL(capturedPhotoUrl);
@@ -152,7 +207,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
     setCaption('');
   };
 
-  // Confirm and upload
+  // Upload
   const handleConfirmUpload = async () => {
     if (!capturedBlob) return;
     try {
@@ -171,6 +226,16 @@ export const CameraModal: React.FC<CameraModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 sm:bg-black/80 backdrop-blur-md p-0 sm:p-4 animate-fade-in">
+      {/* Hidden native mobile camera input */}
+      <input
+        ref={nativeCameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleNativeCameraCapture}
+        className="hidden"
+      />
+
       <div className="relative w-full h-full sm:max-w-lg sm:h-[88vh] sm:max-h-[750px] bg-stone-950 sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-stone-800 shadow-2xl">
         
         {/* Top bar */}
@@ -183,6 +248,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
           <button
             onClick={() => {
               handleRetake();
+              stopStream();
               onClose();
             }}
             className="p-2 rounded-full bg-stone-900/80 text-white/80 hover:text-white hover:bg-stone-800 transition-colors"
@@ -194,14 +260,31 @@ export const CameraModal: React.FC<CameraModalProps> = ({
         {/* Viewport Area */}
         <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
           {cameraError ? (
-            <div className="p-6 text-center text-stone-300 max-w-xs">
-              <p className="text-sm text-stone-400 mb-4">{cameraError}</p>
-              <button
-                onClick={startCamera}
-                className="px-4 py-2 bg-stone-800 text-white text-xs font-semibold rounded-xl hover:bg-stone-700 transition"
-              >
-                Reintentar
-              </button>
+            /* Error & Native Camera Fallback Screen */
+            <div className="p-6 text-center text-stone-300 max-w-sm flex flex-col items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <p className="text-sm text-stone-300 leading-relaxed">{cameraError}</p>
+
+              <div className="flex flex-col w-full gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => nativeCameraInputRef.current?.click()}
+                  className="w-full py-3.5 px-4 bg-white text-stone-950 font-semibold text-sm rounded-xl hover:bg-stone-200 transition flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Abrir Cámara del Móvil</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => startCamera(facingMode)}
+                  className="w-full py-2.5 px-4 bg-stone-900 text-stone-300 text-xs font-medium rounded-xl hover:bg-stone-800 transition border border-stone-800"
+                >
+                  Reintentar Cámara en Web
+                </button>
+              </div>
             </div>
           ) : capturedPhotoUrl ? (
             /* Preview of captured photo */
@@ -216,6 +299,13 @@ export const CameraModal: React.FC<CameraModalProps> = ({
           ) : (
             /* Live Camera Stream */
             <div className="relative w-full h-full flex items-center justify-center">
+              {isInitializing && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 gap-2 text-stone-400 text-xs">
+                  <RefreshCw className="w-6 h-6 animate-spin text-white" />
+                  <span>Iniciando cámara...</span>
+                </div>
+              )}
+
               <video
                 ref={videoRef}
                 playsInline
@@ -279,24 +369,22 @@ export const CameraModal: React.FC<CameraModalProps> = ({
             </div>
           ) : (
             /* Live Camera Shutter Controls */
-            <div className="flex items-center justify-around">
-              {/* Flip camera button */}
-              <div className="w-12 flex justify-center">
-                {hasMultipleCameras && (
-                  <button
-                    onClick={handleFlipCamera}
-                    className="p-3 rounded-full bg-stone-900/80 text-stone-300 hover:text-white hover:bg-stone-800 transition"
-                    title="Girar cámara"
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Shutter Button */}
+            <div className="flex items-center justify-between px-4">
+              {/* Native Mobile Camera trigger button */}
               <button
+                type="button"
+                onClick={() => nativeCameraInputRef.current?.click()}
+                className="p-3 rounded-full bg-stone-900/80 text-stone-300 hover:text-white hover:bg-stone-800 transition flex items-center justify-center"
+                title="Abrir cámara del teléfono"
+              >
+                <ImagePlus className="w-5 h-5" />
+              </button>
+
+              {/* Central Shutter Button */}
+              <button
+                type="button"
                 onClick={takePhoto}
-                disabled={Boolean(cameraError)}
+                disabled={Boolean(cameraError) || isInitializing}
                 className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-white p-1.5 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-transform duration-150 group disabled:opacity-40"
                 aria-label="Tomar foto"
               >
@@ -305,8 +393,20 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                 </div>
               </button>
 
-              {/* Empty placeholder for symmetrical balance */}
-              <div className="w-12" />
+              {/* Flip camera button */}
+              {hasMultipleCameras ? (
+                <button
+                  type="button"
+                  onClick={handleFlipCamera}
+                  disabled={Boolean(cameraError) || isInitializing}
+                  className="p-3 rounded-full bg-stone-900/80 text-stone-300 hover:text-white hover:bg-stone-800 transition flex items-center justify-center disabled:opacity-40"
+                  title="Girar cámara"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+              ) : (
+                <div className="w-11" />
+              )}
             </div>
           )}
         </div>

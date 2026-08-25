@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useEffect, useState, useCallback, use } from 'react';
 import { notFound } from 'next/navigation';
 import confetti from 'canvas-confetti';
-import { Calendar, Camera, Sparkles, AlertTriangle, ArrowLeft, RefreshCw, Radio, Lock, Clock, ShieldCheck, Zap } from 'lucide-react';
+import { Calendar, Camera, Sparkles, AlertTriangle, ArrowLeft, RefreshCw, Radio, Lock, Clock, ShieldCheck, Image as ImageIcon, Zap, X } from 'lucide-react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { PhotoUploader } from '@/components/PhotoUploader';
@@ -29,10 +29,11 @@ export default function AlbumPublicPage({
   const [notFoundState, setNotFoundState] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // NFC 5-minute access management state
+  // NFC 5-minute upload permission state
   const [isAdminUser, setIsAdminUser] = useState(false);
-  const [hasNfcAccess, setHasNfcAccess] = useState<boolean | null>(null);
+  const [hasNfcAccess, setHasNfcAccess] = useState<boolean>(false);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const [showNfcModal, setShowNfcModal] = useState<boolean>(false);
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -43,7 +44,7 @@ export default function AlbumPublicPage({
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Helper to grant 5 minutes of NFC access
+  // Helper to grant 5 minutes of NFC upload permission
   const grantNfcSession = useCallback((seconds = 300) => {
     const expiryTime = Date.now() + seconds * 1000;
     if (typeof window !== 'undefined') {
@@ -56,6 +57,8 @@ export default function AlbumPublicPage({
     }
     setHasNfcAccess(true);
     setRemainingSeconds(seconds);
+    setShowNfcModal(false);
+    addToast('success', '¡Cámara desbloqueada durante 5 minutos!');
   }, [slug]);
 
   // Check NFC and Admin Authorization on mount
@@ -99,7 +102,7 @@ export default function AlbumPublicPage({
 
   // 1-second interval timer for 5-minute countdown
   useEffect(() => {
-    if (isAdminUser || hasNfcAccess !== true) return;
+    if (isAdminUser || !hasNfcAccess) return;
 
     const interval = setInterval(() => {
       setRemainingSeconds((prev) => {
@@ -108,6 +111,7 @@ export default function AlbumPublicPage({
             sessionStorage.removeItem(`breaphoto_nfc_access_${slug}`);
           }
           setHasNfcAccess(false);
+          addToast('info', 'El tiempo de subida ha finalizado. Vuelve a escanear el NFC para hacer más fotos.');
           return 0;
         }
         return prev - 1;
@@ -356,84 +360,50 @@ export default function AlbumPublicPage({
             <span className="text-sm font-medium">Cargando álbum...</span>
           </div>
         </div>
-      ) : hasNfcAccess === false && !isAdminUser ? (
-        /* NFC Access Gate: Locked / Expired Screen */
-        <main className="flex-1 max-w-md w-full mx-auto px-4 py-12 flex flex-col items-center justify-center text-center animate-fade-in my-auto">
-          <div className="p-8 sm:p-10 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-2xl w-full flex flex-col items-center relative overflow-hidden">
-            
-            {/* Ambient background glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-stone-900/5 dark:bg-white/5 rounded-full blur-2xl pointer-events-none" />
-
-            {/* Pulsing NFC Icon */}
-            <div className="relative mb-6">
-              <div className="w-20 h-20 rounded-3xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center shadow-xl">
-                <Radio className="w-10 h-10 animate-pulse" />
-              </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center border-2 border-white dark:border-stone-900 shadow">
-                <Lock className="w-4 h-4" />
-              </div>
-            </div>
-
-            <span className="px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold uppercase tracking-wider mb-3">
-              Acceso Protegido por NFC
-            </span>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-950 dark:text-stone-50 tracking-tight mb-3">
-              {remainingSeconds === 0 && sessionStorage.getItem(`breaphoto_nfc_access_${slug}`) === null && album
-                ? album.name
-                : 'Sesión Finalizada'}
-            </h1>
-
-            <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed mb-6 max-w-xs">
-              Para ver las fotos o subir las tuyas, <strong>acerca tu teléfono a la tarjeta NFC</strong> o escanea el código del evento.
-            </p>
-
-            <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-850 border border-stone-200/80 dark:border-stone-750 w-full text-xs text-stone-500 mb-6 flex items-center gap-3 text-left">
-              <Clock className="w-5 h-5 shrink-0 text-stone-700 dark:text-stone-300" />
-              <span>Cada escaneo te otorga <strong>5 minutos</strong> de acceso temporal al álbum.</span>
-            </div>
-
-            <div className="flex flex-col w-full gap-3">
-              <Link
-                href="/"
-                className="w-full py-3.5 px-4 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-xs sm:text-sm hover:opacity-90 transition shadow flex items-center justify-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Volver al Inicio</span>
-              </Link>
-
-              {/* Dev / Testing bypass */}
-              <button
-                type="button"
-                onClick={() => grantNfcSession(300)}
-                className="text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 underline pt-2"
-              >
-                Simular escaneo NFC (Modo prueba - 5 min)
-              </button>
-            </div>
-          </div>
-        </main>
       ) : (
-        /* Unlocked Album Content */
         <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
           
-          {/* Top Session Status Bar for NFC Users */}
+          {/* Top Session Status Bar for NFC Users (5 minutes active) */}
           {!isAdminUser && hasNfcAccess && (
             <div className="mb-6 px-4 py-2.5 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-between shadow-lg animate-fade-in text-xs font-semibold">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${remainingSeconds <= 60 ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
                 <span className="flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5" />
-                  <span>Acceso NFC Activo</span>
+                  <Radio className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                  <span>Permiso de Cámara NFC Activo</span>
                 </span>
               </div>
 
               <div className="flex items-center gap-2 font-mono">
                 <Clock className="w-3.5 h-3.5" />
                 <span className={remainingSeconds <= 60 ? 'text-amber-300 dark:text-amber-600 font-bold' : ''}>
-                  {formatTimer(remainingSeconds)} restantes
+                  {formatTimer(remainingSeconds)} para subir fotos
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Top Notification Bar for View-Only Users (No NFC or Expired) */}
+          {!isAdminUser && !hasNfcAccess && (
+            <div className="mb-6 px-4 py-3 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 text-stone-700 dark:text-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <Lock className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="font-semibold text-stone-900 dark:text-stone-100">Modo Visualización</span>
+                  <span className="text-stone-500 block sm:inline sm:ml-2">Puedes ver todas las fotos. Para subir las tuyas, acerca tu móvil a la tarjeta NFC del evento.</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowNfcModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold text-xs shrink-0 self-start sm:self-auto hover:opacity-90 transition flex items-center gap-1.5"
+              >
+                <Radio className="w-3.5 h-3.5" />
+                <span>¿Cómo activar la cámara?</span>
+              </button>
             </div>
           )}
 
@@ -442,10 +412,10 @@ export default function AlbumPublicPage({
             <div className="mb-6 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-center justify-between text-xs font-semibold">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>Acceso Administrador Ilimitado (Sin tiempo límite)</span>
+                <span>Modo Administrador (Cámara y subida activadas permanentemente)</span>
               </div>
               <Link href="/admin" className="underline hover:text-emerald-950 dark:hover:text-white">
-                Ir al Panel
+                Panel Admin
               </Link>
             </div>
           )}
@@ -486,14 +456,96 @@ export default function AlbumPublicPage({
                 {album?.name}
               </h1>
 
-              {/* Upload & Camera Trigger Bar */}
-              <PhotoUploader onUploadPhotos={handleUploadPhotos} />
+              {/* Upload Section: Enabled for Admin or Active 5-min NFC Users */}
+              {hasNfcAccess || isAdminUser ? (
+                <PhotoUploader onUploadPhotos={handleUploadPhotos} />
+              ) : (
+                /* Locked Upload Button for Guests with Expired/Inactive NFC */
+                <div className="w-full max-w-xl mx-auto">
+                  <div
+                    onClick={() => setShowNfcModal(true)}
+                    className="p-5 sm:p-6 rounded-3xl bg-stone-50 dark:bg-stone-850 border-2 border-dashed border-stone-200 dark:border-stone-750 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer hover:border-stone-400 dark:hover:border-stone-600 transition group"
+                  >
+                    <div className="flex items-center gap-3.5 text-left">
+                      <div className="w-12 h-12 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center shrink-0 shadow group-hover:scale-105 transition-transform">
+                        <Radio className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                          <span>Hacer fotos requiere NFC</span>
+                          <Lock className="w-3.5 h-3.5 text-amber-500" />
+                        </h3>
+                        <p className="text-xs text-stone-500 mt-0.5">
+                          Acerca tu móvil a la tarjeta NFC para desbloquear 5 minutos de cámara.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowNfcModal(true);
+                      }}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold shrink-0 shadow group-hover:opacity-90 transition"
+                    >
+                      Activar Cámara
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Gallery Section */}
+          {/* Gallery Section: ALWAYS visible to all users */}
           <PhotoGallery photos={photos} albumName={album?.name || 'evento'} />
         </main>
+      )}
+
+      {/* Modal: How to activate camera via NFC */}
+      {showNfcModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="relative w-full max-w-sm bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 border border-stone-200 dark:border-stone-800 shadow-2xl text-center">
+            <button
+              type="button"
+              onClick={() => setShowNfcModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-16 h-16 rounded-3xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Radio className="w-8 h-8 animate-pulse" />
+            </div>
+
+            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 mb-2">
+              Desbloquea la Cámara
+            </h3>
+
+            <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed mb-6">
+              Para subir tus recuerdos a este álbum, <strong>acerca la parte trasera de tu teléfono a la tarjeta NFC</strong> o escanea el código del evento. Obtendrás <strong>5 minutos</strong> de acceso a la cámara.
+            </p>
+
+            <div className="flex flex-col gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowNfcModal(false)}
+                className="w-full py-3 px-4 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-xs font-semibold hover:opacity-90 transition shadow"
+              >
+                Entendido
+              </button>
+
+              {/* Dev / Testing bypass */}
+              <button
+                type="button"
+                onClick={() => grantNfcSession(300)}
+                className="text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 underline pt-2"
+              >
+                Simular escaneo NFC (Prueba - 5 min)
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

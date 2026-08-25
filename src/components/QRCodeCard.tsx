@@ -30,7 +30,7 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
     }
   }, []);
 
-  const albumUrl = origin ? `${origin}/album/${slug}` : `/album/${slug}`;
+  const albumUrl = origin ? `${origin}/album/${slug}?nfc=1` : `/album/${slug}?nfc=1`;
 
   useEffect(() => {
     if (albumUrl) {

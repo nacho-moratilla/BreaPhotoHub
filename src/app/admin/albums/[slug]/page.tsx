@@ -439,15 +439,15 @@ export default function AlbumAdminManagePage({
                     <Radio className="w-4 h-4 text-emerald-400" />
                     <h3 className="font-semibold text-sm">¿Cómo programar etiquetas NFC?</h3>
                   </div>
-                  <p className="text-xs text-stone-400 leading-relaxed mb-4">
-                    Puedes grabar etiquetas o tarjetas NFC baratas (NTAG213/215) para colocarlas en las mesas:
-                  </p>
-                  <ol className="text-xs text-stone-300 space-y-1.5 list-decimal list-inside">
-                    <li>Descarga la app gratuita <strong>NFC Tools</strong> en tu móvil.</li>
-                    <li>Selecciona <em>Escribir &gt; Añadir un registro &gt; URL / URI</em>.</li>
-                    <li>Pega el enlace del álbum (botón arriba).</li>
-                    <li>Acerca tu pegatina o soporte NFC para grabar.</li>
-                  </ol>
+                    <p className="text-xs text-stone-400 leading-relaxed mb-4">
+                      Graba etiquetas o tarjetas NFC (NTAG213/215) para colocarlas en las mesas del evento. Cada vez que un invitado acerque su móvil, obtendrá <strong>5 minutos de acceso temporal</strong> para ver y subir fotos:
+                    </p>
+                    <ol className="text-xs text-stone-300 space-y-1.5 list-decimal list-inside">
+                      <li>Descarga la app gratuita <strong>NFC Tools</strong> en tu móvil.</li>
+                      <li>Selecciona <em>Escribir &gt; Añadir un registro &gt; URL / URI</em>.</li>
+                      <li>Pega el enlace del álbum generado con NFC (botón copiar arriba).</li>
+                      <li>Acerca tu pegatina o tarjeta NFC para grabarla.</li>
+                    </ol>
                 </div>
               </div>
             </div>

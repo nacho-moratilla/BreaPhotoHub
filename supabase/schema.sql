@@ -51,6 +51,11 @@ CREATE POLICY "Permitir creacion de albumes"
   ON public.albums FOR INSERT
   WITH CHECK (true);
 
+CREATE POLICY "Permitir actualizacion de albumes"
+  ON public.albums FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+
 CREATE POLICY "Permitir borrado de albumes"
   ON public.albums FOR DELETE
   USING (true);
@@ -62,6 +67,11 @@ CREATE POLICY "Permitir lectura publica de fotos"
 
 CREATE POLICY "Permitir subida publica de fotos"
   ON public.photos FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Permitir actualizacion de fotos"
+  ON public.photos FOR UPDATE
+  USING (true)
   WITH CHECK (true);
 
 CREATE POLICY "Permitir borrado de fotos"
@@ -83,6 +93,12 @@ CREATE POLICY "Permitir subida publica de fotos al storage"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'album-photos');
 
+CREATE POLICY "Permitir actualizacion de objetos del storage"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'album-photos')
+  WITH CHECK (bucket_id = 'album-photos');
+
 CREATE POLICY "Permitir borrado de objetos del storage"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'album-photos');
+

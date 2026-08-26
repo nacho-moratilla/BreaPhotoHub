@@ -170,13 +170,18 @@ export default function AlbumAdminManagePage({
             .from('album-photos')
             .upload(filePath, compressed, { contentType: 'image/jpeg', upsert: true });
 
-          if (!uploadErr) {
-            const { data } = supabase.storage.from('album-photos').getPublicUrl(filePath);
-            newCoverValue = data.publicUrl;
+          if (uploadErr) {
+            console.error('Error subiendo imagen de portada a Supabase Storage:', uploadErr);
+            throw new Error(`Error en el almacenamiento: ${uploadErr.message}`);
           }
+
+          const { data } = supabase.storage.from('album-photos').getPublicUrl(filePath);
+          newCoverValue = data.publicUrl;
         } else if (coverPreview && !coverFile) {
           newCoverValue = coverPreview;
         }
+      } else if (coverType === 'none') {
+        newCoverValue = null;
       }
 
       if (isSupabaseConfigured) {
@@ -185,15 +190,25 @@ export default function AlbumAdminManagePage({
           .update({ cover_url: newCoverValue })
           .eq('id', album.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error actualizando portada en la tabla albums:', error);
+          throw new Error(`Error en base de datos: ${error.message}`);
+        }
       }
 
-      setAlbum((prev) => prev ? { ...prev, cover_url: newCoverValue } : null);
+      // Update state
+      setAlbum((prev) => (prev ? { ...prev, cover_url: newCoverValue } : null));
+      setCoverFile(null);
+      if (coverType === 'photo') {
+        setCoverPreview(newCoverValue);
+      } else if (coverType === 'emoji') {
+        setSelectedEmoji(customEmojiInput.trim() || selectedEmoji || '🎉');
+      }
       setIsEditingCover(false);
       addToast('success', '¡Portada actualizada con éxito!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error guardando portada:', err);
-      addToast('error', 'Error al guardar la nueva portada.');
+      addToast('error', err?.message || 'Error al guardar la nueva portada.');
     } finally {
       setIsSavingCover(false);
     }

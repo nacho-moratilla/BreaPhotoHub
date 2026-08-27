@@ -48,17 +48,18 @@ export default function AlbumPublicPage({
   const grantNfcSession = useCallback((seconds = 300) => {
     const expiryTime = Date.now() + seconds * 1000;
     if (typeof window !== 'undefined') {
+      localStorage.setItem(`breaphoto_nfc_access_${slug}`, expiryTime.toString());
       sessionStorage.setItem(`breaphoto_nfc_access_${slug}`, expiryTime.toString());
       
-      // Clean query parameter from URL
-      if (window.location.search.includes('nfc') || window.location.search.includes('access')) {
+      // Clean query parameter from URL without page reload
+      if (window.location.search.toLowerCase().includes('nfc') || window.location.search.toLowerCase().includes('access') || window.location.search.toLowerCase().includes('tag')) {
         window.history.replaceState({}, '', window.location.pathname);
       }
     }
     setHasNfcAccess(true);
     setRemainingSeconds(seconds);
     setShowNfcModal(false);
-    addToast('success', '¡Cámara desbloqueada durante 5 minutos!');
+    addToast('success', '¡Cámara y subida desbloqueadas durante 5 minutos!');
   }, [slug]);
 
   // Check NFC and Admin Authorization on mount
@@ -66,7 +67,7 @@ export default function AlbumPublicPage({
     if (typeof window === 'undefined') return;
 
     // 1. Check if admin
-    const adminAuth = sessionStorage.getItem('breaphoto_admin_auth') === 'true';
+    const adminAuth = sessionStorage.getItem('breaphoto_admin_auth') === 'true' || localStorage.getItem('breaphoto_admin_auth') === 'true';
     setIsAdminUser(adminAuth);
 
     if (adminAuth) {
@@ -74,21 +75,32 @@ export default function AlbumPublicPage({
       return;
     }
 
-    // 2. Check URL for NFC trigger (?nfc=1 or ?access=nfc)
+    // 2. Check URL for any NFC trigger parameter (?nfc=1, ?nfc=true, ?nfc, ?tag=1, etc.)
     const searchParams = new URLSearchParams(window.location.search);
-    const hasNfcParam = searchParams.get('nfc') === '1' || searchParams.get('access') === 'nfc' || searchParams.get('tag') === 'nfc';
+    const searchStr = window.location.search.toLowerCase();
+    const hashStr = window.location.hash.toLowerCase();
+
+    const hasNfcParam = 
+      searchParams.has('nfc') || 
+      searchParams.has('tag') || 
+      searchParams.has('scan') ||
+      searchParams.get('access') === 'nfc' ||
+      searchStr.includes('nfc') ||
+      searchStr.includes('tag') ||
+      hashStr.includes('nfc');
 
     if (hasNfcParam) {
       grantNfcSession(300); // 5 minutes
     } else {
-      // 3. Check existing stored NFC session
-      const storedExpiry = sessionStorage.getItem(`breaphoto_nfc_access_${slug}`);
+      // 3. Check existing stored NFC session in localStorage or sessionStorage
+      const storedExpiry = localStorage.getItem(`breaphoto_nfc_access_${slug}`) || sessionStorage.getItem(`breaphoto_nfc_access_${slug}`);
       if (storedExpiry) {
         const remaining = Math.floor((Number(storedExpiry) - Date.now()) / 1000);
         if (remaining > 0) {
           setHasNfcAccess(true);
           setRemainingSeconds(remaining);
         } else {
+          localStorage.removeItem(`breaphoto_nfc_access_${slug}`);
           sessionStorage.removeItem(`breaphoto_nfc_access_${slug}`);
           setHasNfcAccess(false);
           setRemainingSeconds(0);
@@ -108,10 +120,11 @@ export default function AlbumPublicPage({
       setRemainingSeconds((prev) => {
         if (prev <= 1) {
           if (typeof window !== 'undefined') {
+            localStorage.removeItem(`breaphoto_nfc_access_${slug}`);
             sessionStorage.removeItem(`breaphoto_nfc_access_${slug}`);
           }
           setHasNfcAccess(false);
-          addToast('info', 'El tiempo de subida ha finalizado. Vuelve a escanear el NFC para hacer más fotos.');
+          addToast('info', 'El tiempo de subida ha finalizado. Vuelve a acercar el móvil al NFC para hacer más fotos.');
           return 0;
         }
         return prev - 1;

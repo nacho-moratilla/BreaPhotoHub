@@ -12,11 +12,13 @@ CREATE TABLE IF NOT EXISTS public.albums (
   event_date DATE,
   event_end_date DATE,
   admin_password TEXT NOT NULL DEFAULT 'admin123',
+  nfc_token TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Si la tabla ya fue creada anteriormente, añade la columna de fecha de fin:
+-- Si la tabla ya fue creada anteriormente, añade las columnas necesarias:
 ALTER TABLE public.albums ADD COLUMN IF NOT EXISTS event_end_date DATE;
+ALTER TABLE public.albums ADD COLUMN IF NOT EXISTS nfc_token TEXT;
 
 -- 2. TABLA DE FOTOS
 CREATE TABLE IF NOT EXISTS public.photos (

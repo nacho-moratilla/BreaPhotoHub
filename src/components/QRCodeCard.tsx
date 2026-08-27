@@ -10,6 +10,7 @@ interface QRCodeCardProps {
   albumName: string;
   eventDate?: string | null;
   eventEndDate?: string | null;
+  nfcToken?: string | null;
 }
 
 export const QRCodeCard: React.FC<QRCodeCardProps> = ({
@@ -17,6 +18,7 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
   albumName,
   eventDate,
   eventEndDate,
+  nfcToken,
 }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -30,7 +32,8 @@ export const QRCodeCard: React.FC<QRCodeCardProps> = ({
     }
   }, []);
 
-  const albumUrl = origin ? `${origin}/album/${slug}?nfc=1` : `/album/${slug}?nfc=1`;
+  const tokenParam = nfcToken ? `?nfc=${encodeURIComponent(nfcToken)}` : '?nfc=1';
+  const albumUrl = origin ? `${origin}/album/${slug}${tokenParam}` : `/album/${slug}${tokenParam}`;
 
   useEffect(() => {
     if (albumUrl) {

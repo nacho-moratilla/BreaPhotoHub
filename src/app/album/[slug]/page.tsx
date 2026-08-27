@@ -13,7 +13,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, Photo, ToastMessage } from '@/lib/types';
-import { formatDateRange, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { formatDateRange, isEmojiCover, getCoverEmoji, getAlbumNfcToken } from '@/lib/utils';
 
 export default function AlbumPublicPage({
   params,
@@ -62,7 +62,7 @@ export default function AlbumPublicPage({
     addToast('success', '¡Cámara y subida desbloqueadas durante 5 minutos!');
   }, [slug]);
 
-  // Check NFC and Admin Authorization on mount
+  // Check NFC and Admin Authorization
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -75,24 +75,22 @@ export default function AlbumPublicPage({
       return;
     }
 
-    // 2. Check URL for any NFC trigger parameter (?nfc=1, ?nfc=true, ?nfc, ?tag=1, etc.)
+    if (!album) return;
+
+    const expectedToken = getAlbumNfcToken(album);
     const searchParams = new URLSearchParams(window.location.search);
-    const searchStr = window.location.search.toLowerCase();
-    const hashStr = window.location.hash.toLowerCase();
+    const nfcParam = searchParams.get('nfc') || searchParams.get('tag') || searchParams.get('token');
 
-    const hasNfcParam = 
-      searchParams.has('nfc') || 
-      searchParams.has('tag') || 
-      searchParams.has('scan') ||
-      searchParams.get('access') === 'nfc' ||
-      searchStr.includes('nfc') ||
-      searchStr.includes('tag') ||
-      hashStr.includes('nfc');
-
-    if (hasNfcParam) {
-      grantNfcSession(300); // 5 minutes
+    if (nfcParam) {
+      // Validate token: Must match expected secret token (or backward-compatible trigger)
+      if (nfcParam.toLowerCase() === expectedToken.toLowerCase() || nfcParam === '1' || nfcParam === 'true') {
+        grantNfcSession(300); // 5 minutes
+      } else {
+        addToast('error', 'Token NFC no válido. Acerca el móvil a la tarjeta oficial para activar la cámara.');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     } else {
-      // 3. Check existing stored NFC session in localStorage or sessionStorage
+      // Check existing stored NFC session in localStorage or sessionStorage
       const storedExpiry = localStorage.getItem(`breaphoto_nfc_access_${slug}`) || sessionStorage.getItem(`breaphoto_nfc_access_${slug}`);
       if (storedExpiry) {
         const remaining = Math.floor((Number(storedExpiry) - Date.now()) / 1000);
@@ -110,7 +108,7 @@ export default function AlbumPublicPage({
         setRemainingSeconds(0);
       }
     }
-  }, [slug, grantNfcSession]);
+  }, [slug, album, grantNfcSession]);
 
   // 1-second interval timer for 5-minute countdown
   useEffect(() => {

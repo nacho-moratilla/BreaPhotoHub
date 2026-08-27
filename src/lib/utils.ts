@@ -239,3 +239,32 @@ export function getCoverEmoji(cover: string | null | undefined): string {
   return cover.trim();
 }
 
+/**
+ * Generates a clean, friendly random token for NFC tag authentication
+ */
+export function generateNfcToken(length = 8): string {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+/**
+ * Returns the album's secret NFC token or computes a deterministic fallback from ID
+ */
+export function getAlbumNfcToken(album: { id: string; nfc_token?: string | null; slug?: string }): string {
+  if (album.nfc_token && album.nfc_token.trim().length > 0) {
+    return album.nfc_token.trim();
+  }
+  const cleanId = (album.id || album.slug || 'breaphoto').replace(/[^a-zA-Z0-9]/g, '');
+  let hash = 0;
+  for (let i = 0; i < cleanId.length; i++) {
+    hash = ((hash << 5) - hash) + cleanId.charCodeAt(i);
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(36);
+  return (hex + 'k8m2').slice(0, 8);
+}
+

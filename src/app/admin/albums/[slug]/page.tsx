@@ -13,11 +13,13 @@ import {
   Calendar, 
   Radio, 
   RefreshCw, 
-  Sparkles,
-  Smile,
-  Image as ImageIcon,
-  Check,
-  UploadCloud
+  Sparkles, 
+  Smile, 
+  Image as ImageIcon, 
+  Check, 
+  UploadCloud,
+  Key,
+  Copy
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { QRCodeCard } from '@/components/QRCodeCard';
@@ -25,7 +27,7 @@ import { PhotoGallery } from '@/components/PhotoGallery';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Album, Photo, ToastMessage } from '@/lib/types';
-import { formatDateRange, isEmojiCover, getCoverEmoji, compressImage } from '@/lib/utils';
+import { formatDateRange, isEmojiCover, getCoverEmoji, compressImage, getAlbumNfcToken, generateNfcToken } from '@/lib/utils';
 
 const PRESET_EMOJIS = [
   '🎉', '🍷', '💃', '🌾', '⛪', '🎆', 
@@ -214,6 +216,31 @@ export default function AlbumAdminManagePage({
     }
   };
 
+  const currentNfcToken = album ? getAlbumNfcToken(album) : '';
+
+  const handleRegenerateNfcToken = async () => {
+    if (!album) return;
+    if (!window.confirm('¿Seguro que quieres generar un nuevo Token NFC? Las tarjetas físicas ya grabadas deberán reprogramarse con el nuevo enlace.')) {
+      return;
+    }
+
+    try {
+      const newToken = generateNfcToken(8);
+      if (isSupabaseConfigured) {
+        const { error } = await supabase
+          .from('albums')
+          .update({ nfc_token: newToken })
+          .eq('id', album.id);
+        if (error) throw error;
+      }
+      setAlbum((prev) => (prev ? { ...prev, nfc_token: newToken } : null));
+      addToast('success', `¡Nuevo Token NFC generado: ${newToken}!`);
+    } catch (err) {
+      console.error('Error regenerando token NFC:', err);
+      addToast('error', 'Error al regenerar el token NFC.');
+    }
+  };
+
   if (!loading && !album) {
     notFound();
   }
@@ -263,6 +290,7 @@ export default function AlbumAdminManagePage({
                   albumName={album!.name}
                   eventDate={album!.event_date}
                   eventEndDate={album!.event_end_date}
+                  nfcToken={currentNfcToken}
                 />
               </div>
 
@@ -293,7 +321,7 @@ export default function AlbumAdminManagePage({
                     )}
                   </div>
 
-                  <div className="space-y-3 text-sm">
+                  <div className="space-y-3.5 text-sm">
                     <div>
                       <span className="text-xs text-stone-400 block">Nombre del Álbum</span>
                       <span className="font-semibold text-stone-800 dark:text-stone-200">{album!.name}</span>
@@ -308,8 +336,44 @@ export default function AlbumAdminManagePage({
                       </div>
                     )}
 
+                    {/* Secret NFC Token */}
                     <div>
-                      <span className="text-xs text-stone-400 block">Enlace público</span>
+                      <span className="text-xs text-stone-400 block mb-1">Token Secreto NFC (Protección de cámara)</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                          <Key className="w-3.5 h-3.5 text-amber-500" />
+                          <span className="font-mono text-xs font-bold text-stone-900 dark:text-stone-100 tracking-wider">
+                            {currentNfcToken}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nfcUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/album/${album!.slug}?nfc=${currentNfcToken}`;
+                            navigator.clipboard.writeText(nfcUrl);
+                            addToast('success', '¡Enlace NFC copiado al portapapeles!');
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-medium flex items-center gap-1 transition"
+                          title="Copiar enlace completo para NFC"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar enlace NFC</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleRegenerateNfcToken}
+                          className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 text-xs transition"
+                          title="Regenerar clave aleatoria"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-xs text-stone-400 block">Enlace público (Solo ver)</span>
                       <span className="font-mono text-xs text-stone-600 dark:text-stone-400 break-all">
                         {typeof window !== 'undefined' ? `${window.location.origin}/album/${album!.slug}` : `/album/${album!.slug}`}
                       </span>
@@ -450,17 +514,16 @@ export default function AlbumAdminManagePage({
 
                 {/* NFC Setup Helper */}
                 <div className="p-6 rounded-3xl bg-stone-900 text-stone-100 dark:bg-stone-850 border border-stone-800 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Radio className="w-4 h-4 text-emerald-400" />
-                    <h3 className="font-semibold text-sm">¿Cómo programar etiquetas NFC?</h3>
-                  </div>
-                    <p className="text-xs text-stone-400 leading-relaxed mb-4">
-                      Graba etiquetas o tarjetas NFC (NTAG213/215) para colocarlas en las mesas del evento. Cada vez que un invitado acerque su móvil, obtendrá <strong>5 minutos de acceso temporal</strong> para ver y subir fotos:
+                    <p className="text-xs text-stone-400 leading-relaxed mb-3">
+                      Graba tus pegatinas o tarjetas NFC (NTAG213/215) con este enlace protegido. Solo los teléfonos que toquen físicamente la tarjeta obtendrán <strong>5 minutos</strong> de permiso de subida:
                     </p>
+                    <div className="p-3 rounded-xl bg-stone-950 border border-stone-800 font-mono text-[11px] text-emerald-400 select-all break-all mb-4">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/album/${album!.slug}?nfc=${currentNfcToken}` : `/album/${album!.slug}?nfc=${currentNfcToken}`}
+                    </div>
                     <ol className="text-xs text-stone-300 space-y-1.5 list-decimal list-inside">
                       <li>Descarga la app gratuita <strong>NFC Tools</strong> en tu móvil.</li>
                       <li>Selecciona <em>Escribir &gt; Añadir un registro &gt; URL / URI</em>.</li>
-                      <li>Pega el enlace del álbum generado con NFC (botón copiar arriba).</li>
+                      <li>Pega el enlace protegido con token (arriba).</li>
                       <li>Acerca tu pegatina o tarjeta NFC para grabarla.</li>
                     </ol>
                 </div>

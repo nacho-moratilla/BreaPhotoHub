@@ -6,6 +6,7 @@ export interface Album {
   event_date: string | null;
   event_end_date?: string | null;
   admin_password?: string;
+  nfc_token?: string | null;
   created_at: string;
   photos_count?: number;
 }

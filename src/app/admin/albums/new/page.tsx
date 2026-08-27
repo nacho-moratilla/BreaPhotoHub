@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, Image as ImageIcon, Loader2, Sparkles, Smile, UploadCl
 import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { slugify, compressImage, isEmojiCover, getCoverEmoji } from '@/lib/utils';
+import { slugify, compressImage, isEmojiCover, getCoverEmoji, generateNfcToken } from '@/lib/utils';
 import { ToastMessage } from '@/lib/types';
 
 const PRESET_EMOJIS = [
@@ -114,6 +114,7 @@ export default function NewAlbumPage() {
             event_end_date: eventEndDate || null,
             cover_url: finalCoverValue,
             admin_password: adminPassword.trim() || 'admin123',
+            nfc_token: generateNfcToken(8),
           });
 
         if (insertError) {

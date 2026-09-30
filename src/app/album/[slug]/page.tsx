@@ -556,15 +556,6 @@ export default function AlbumPublicPage({
               >
                 Entendido
               </button>
-
-              {/* Dev / Testing bypass */}
-              <button
-                type="button"
-                onClick={() => grantNfcSession(300)}
-                className="text-[11px] text-[#52b788]/70 hover:text-[#52b788] underline pt-2"
-              >
-                Simular escaneo NFC (Prueba - 5 min)
-              </button>
             </div>
           </div>
         </div>

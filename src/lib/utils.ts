@@ -154,16 +154,41 @@ export async function compressImage(
 }
 
 /**
- * Downloads a single image directly with proper name.
+ * Downloads or shares a single image.
+ * On mobile devices supporting Web Share API with files (iOS/Android),
+ * this opens the native share sheet allowing direct "Save to Photos / Gallery".
+ * On desktop or unsupported devices, it falls back to standard file download.
  */
-export async function downloadSingleImage(url: string, filename: string) {
+export async function downloadOrShareImage(url: string, filename: string): Promise<void> {
   try {
     const response = await fetch(url);
     const blob = await response.blob();
+    const mimeType = blob.type || 'image/jpeg';
+    const file = new File([blob], filename, { type: mimeType });
+
+    // Check if Web Share API is available and can share image files
+    if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Guardar foto',
+          text: 'Foto de Peña La Comuna',
+        });
+        return;
+      } catch (shareErr: any) {
+        // If user cancelled the share sheet, do nothing
+        if (shareErr.name === 'AbortError') {
+          return;
+        }
+        console.warn('Share API falló, usando descarga estándar:', shareErr);
+      }
+    }
+
+    // Standard download fallback
     saveAs(blob, filename);
   } catch (error) {
-    console.error('Error al descargar la imagen:', error);
-    // Fallback: direct anchor link trigger
+    console.error('Error al descargar o guardar la imagen:', error);
+    // Ultimate fallback: direct anchor link trigger
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
@@ -173,6 +198,11 @@ export async function downloadSingleImage(url: string, filename: string) {
     document.body.removeChild(a);
   }
 }
+
+/**
+ * Downloads a single image directly with proper name (alias).
+ */
+export const downloadSingleImage = downloadOrShareImage;
 
 /**
  * Downloads all photos in an album packaged into a single ZIP file.

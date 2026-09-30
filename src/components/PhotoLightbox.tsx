@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useCallback, useState } from 'react';
-import { X, Download, ChevronLeft, ChevronRight, Trash2, Calendar } from 'lucide-react';
+import { X, Download, Share2, ChevronLeft, ChevronRight, Trash2, Calendar, Loader2 } from 'lucide-react';
 import { Photo } from '@/lib/types';
-import { formatTimeAgo, downloadSingleImage } from '@/lib/utils';
+import { formatTimeAgo, downloadOrShareImage } from '@/lib/utils';
 
 interface PhotoLightboxProps {
   photo: Photo | null;
@@ -25,6 +25,7 @@ export const PhotoLightbox: React.FC<PhotoLightboxProps> = ({
   const currentIndex = photo ? photos.findIndex((p) => p.id === photo.id) : -1;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < photos.length - 1;
+  const [isSaving, setIsSaving] = useState(false);
 
   // Touch swipe handling
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -88,9 +89,14 @@ export const PhotoLightbox: React.FC<PhotoLightboxProps> = ({
 
   if (!photo) return null;
 
-  const handleDownload = () => {
-    const filename = photo.filename || `comuna-${photo.id.slice(0, 8)}.jpg`;
-    downloadSingleImage(photo.url, filename);
+  const handleSaveOrDownload = async () => {
+    try {
+      setIsSaving(true);
+      const filename = photo.filename || `comuna-${photo.id.slice(0, 8)}.jpg`;
+      await downloadOrShareImage(photo.url, filename);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -118,14 +124,19 @@ export const PhotoLightbox: React.FC<PhotoLightboxProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Download button */}
+          {/* Save to Photos / Download button */}
           <button
-            onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#0d1b14] hover:bg-[#1b4332] active:scale-95 text-[#f8f9fa] text-xs sm:text-sm font-semibold transition border border-[#52b788]/40 shadow-sm"
-            title="Descargar foto"
+            onClick={handleSaveOrDownload}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#0d1b14] hover:bg-[#1b4332] active:scale-95 text-[#f8f9fa] text-xs sm:text-sm font-semibold transition border border-[#52b788]/40 shadow-sm disabled:opacity-50"
+            title="Guardar foto en Galería / Descargar"
           >
-            <Download className="w-4 h-4 text-[#ffb703]" />
-            <span className="hidden sm:inline">Descargar</span>
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#52b788]" />
+            ) : (
+              <Download className="w-4 h-4 text-[#ffb703]" />
+            )}
+            <span className="hidden sm:inline">Guardar en Fotos</span>
           </button>
 
           {/* Delete button (Admin only) */}
@@ -189,7 +200,7 @@ export const PhotoLightbox: React.FC<PhotoLightboxProps> = ({
           src={photo.url}
           alt={photo.caption || 'Foto de La Comuna'}
           onClick={(e) => e.stopPropagation()}
-          className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-[#52b788]/20 transition-all duration-200 select-none animate-fade-in cursor-default"
+          className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-[#52b788]/20 transition-all duration-200 animate-fade-in cursor-default"
         />
       </div>
 

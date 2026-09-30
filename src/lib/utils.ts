@@ -103,8 +103,8 @@ export function formatTimeAgo(dateString: string): string {
  */
 export async function compressImage(
   file: File | Blob,
-  maxWidth = 2000,
-  quality = 0.85
+  maxWidth = 4096,
+  quality = 0.95
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();

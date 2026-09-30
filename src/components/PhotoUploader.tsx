@@ -46,10 +46,14 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     }
 
     try {
-      setUploadProgress('Procesando foto...');
-      const compressed = await compressImage(file, 2048, 0.90);
-      const url = URL.createObjectURL(compressed);
-      setPreviewBlob(compressed);
+      setUploadProgress('Procesando foto en máxima calidad...');
+      // Preserve full native camera resolution and HDR details
+      let finalBlob: Blob = file;
+      if (file.size > 16 * 1024 * 1024) {
+        finalBlob = await compressImage(file, 4096, 0.95);
+      }
+      const url = URL.createObjectURL(finalBlob);
+      setPreviewBlob(finalBlob);
       setPreviewPhotoUrl(url);
       setCaption('');
     } catch (err) {
@@ -82,7 +86,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     if (!previewBlob) return;
     try {
       setIsUploading(true);
-      setUploadProgress('Subiendo foto al álbum de La Comuna...');
+      setUploadProgress('Subiendo foto en calidad original...');
       await onUploadPhotos([
         {
           blob: previewBlob,
@@ -126,10 +130,13 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
       for (let i = 0; i < total; i++) {
         const file = imageFiles[i];
-        setUploadProgress(`Procesando imagen ${i + 1} de ${total}...`);
-        const compressed = await compressImage(file, 2048, 0.90);
+        setUploadProgress(`Preparando foto ${i + 1} de ${total} (Máxima Calidad)...`);
+        let finalBlob: Blob = file;
+        if (file.size > 16 * 1024 * 1024) {
+          finalBlob = await compressImage(file, 4096, 0.95);
+        }
         preparedFiles.push({
-          blob: compressed,
+          blob: finalBlob,
           filename: file.name.replace(/\.[^/.]+$/, '') + '.jpg',
         });
       }

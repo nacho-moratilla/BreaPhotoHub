@@ -1,23 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Pirata+One&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --card-bg: #ffffff;
-  --border: #e7e5e4;
-  --accent-color: #0f172a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c0a09;
-    --foreground: #f5f5f4;
-    --card-bg: #1c1917;
-    --border: #292524;
-    --accent-color: #f5f5f4;
-  }
+  --bg-dark: #070f0b;
+  --bg-card: rgba(13, 27, 20, 0.85);
+  --bg-card-hover: rgba(22, 48, 35, 0.9);
+  --border-color: rgba(82, 183, 136, 0.2);
+  --border-color-hover: rgba(82, 183, 136, 0.5);
+  
+  --primary: #52b788;
+  --primary-hover: #74c69d;
+  --secondary: #1b4332;
+  --accent: #ffb703;
+  --accent-hover: #ffc300;
+  
+  --text-main: #f8f9fa;
+  --text-muted: #b7c4bb;
+  
+  --font-display: 'Pirata One', cursive;
+  --font-sans: 'Outfit', sans-serif;
+  
+  --shadow-glow: 0 0 15px rgba(82, 183, 136, 0.25);
+  --shadow-glow-hover: 0 0 25px rgba(82, 183, 136, 0.5);
 }
 
 * {
@@ -25,84 +32,105 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing: -0.011em;
+  color: var(--text-main);
+  background-color: var(--bg-dark);
+  font-family: var(--font-sans);
   min-height: 100vh;
   overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(27, 67, 50, 0.22) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(82, 183, 136, 0.12) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Typography Helpers */
+.font-pirata {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+.font-sans {
+  font-family: var(--font-sans);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 113, 108, 0.25);
-  border-radius: 9999px;
+  background: var(--secondary);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 113, 108, 0.45);
+  background: var(--primary);
 }
 
-/* Glassmorphism subtle surface */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(231, 229, 228, 0.8);
+/* La Comuna Glass Card */
+.comuna-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  .glass-panel {
-    background: rgba(28, 25, 23, 0.82);
-    border: 1px solid rgba(41, 37, 36, 0.8);
-  }
+.comuna-card:hover {
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-glow);
 }
 
-/* Camera Viewfinder Crosshairs & Frame */
-.viewfinder-corner {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-color: rgba(255, 255, 255, 0.9);
-  pointer-events: none;
+/* Glowing text and buttons */
+.text-glow {
+  text-shadow: 0 0 12px rgba(82, 183, 136, 0.45);
 }
 
-.viewfinder-corner-tl {
-  top: 24px;
-  left: 24px;
-  border-top: 2px solid;
-  border-left: 2px solid;
+.text-glow-gold {
+  text-shadow: 0 0 12px rgba(255, 183, 3, 0.45);
 }
 
-.viewfinder-corner-tr {
-  top: 24px;
-  right: 24px;
-  border-top: 2px solid;
-  border-right: 2px solid;
+.btn-comuna-primary {
+  background: var(--primary);
+  color: #070f0b;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 18px rgba(82, 183, 136, 0.3);
 }
 
-.viewfinder-corner-bl {
-  bottom: 24px;
-  left: 24px;
-  border-bottom: 2px solid;
-  border-left: 2px solid;
+.btn-comuna-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-hover);
 }
 
-.viewfinder-corner-br {
-  bottom: 24px;
-  right: 24px;
-  border-bottom: 2px solid;
-  border-right: 2px solid;
+.btn-comuna-accent {
+  background: var(--accent);
+  color: #070f0b;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 18px rgba(255, 183, 3, 0.3);
+}
+
+.btn-comuna-accent:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 0 25px rgba(255, 183, 3, 0.5);
 }
 
 /* Shutter flash animation */
@@ -122,15 +150,6 @@ body {
   0% { opacity: 0; }
   35% { opacity: 0.95; }
   100% { opacity: 0; }
-}
-
-/* Image grid transition */
-.photo-card-hover {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.photo-card-hover:hover {
-  transform: translateY(-2px);
 }
 
 /* Infinite Marquee animations (Mobbin-style continuous ticker) */
@@ -155,7 +174,7 @@ body {
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 32s linear infinite;
+  animation: marquee 34s linear infinite;
   will-change: transform;
 }
 
@@ -166,11 +185,10 @@ body {
 .animate-marquee-reverse {
   display: flex;
   width: max-content;
-  animation: marquee-reverse 32s linear infinite;
+  animation: marquee-reverse 34s linear infinite;
   will-change: transform;
 }
 
 .animate-marquee-reverse:hover {
   animation-play-state: paused;
 }
-

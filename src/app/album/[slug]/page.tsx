@@ -337,22 +337,22 @@ export default function AlbumPublicPage({
 
   if (notFoundState) {
     return (
-      <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col">
+      <div className="min-h-screen bg-[#070f0b] text-[#f8f9fa] flex flex-col">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-16 h-16 rounded-3xl bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-3xl bg-rose-950/40 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4 shadow-lg">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Álbum no encontrado</h1>
-          <p className="text-sm text-stone-500 max-w-sm mb-6">
-            El enlace o código al que has accedido no corresponde a ningún álbum activo.
+          <h1 className="text-3xl font-pirata text-[#f8f9fa] mb-2 tracking-wide">Álbum no encontrado</h1>
+          <p className="text-sm text-[#b7c4bb] max-w-sm mb-6">
+            El enlace o código al que has accedido no corresponde a ningún álbum activo de la peña.
           </p>
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-sm font-semibold hover:opacity-90 transition flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-[#52b788] text-[#070f0b] text-sm font-bold shadow-glow hover:bg-[#74c69d] transition flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Volver al Inicio</span>
+            <span>Volver a La Comuna</span>
           </Link>
         </div>
       </div>
@@ -360,15 +360,15 @@ export default function AlbumPublicPage({
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col pb-16">
+    <div className="min-h-screen bg-[#070f0b] text-[#f8f9fa] flex flex-col pb-16">
       <Navbar currentAlbumName={album?.name} />
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-32">
-          <div className="flex flex-col items-center gap-3 text-stone-500">
-            <RefreshCw className="w-6 h-6 animate-spin text-stone-700 dark:text-stone-300" />
-            <span className="text-sm font-medium">Cargando álbum...</span>
+          <div className="flex flex-col items-center gap-3 text-[#b7c4bb]">
+            <div className="w-8 h-8 rounded-full border-2 border-[#52b788] border-t-transparent animate-spin" />
+            <span className="text-sm font-medium">Cargando álbum de la peña...</span>
           </div>
         </div>
       ) : (
@@ -376,18 +376,18 @@ export default function AlbumPublicPage({
           
           {/* Top Session Status Bar for NFC Users (5 minutes active) */}
           {!isAdminUser && hasNfcAccess && (
-            <div className="mb-6 px-4 py-2.5 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-between shadow-lg animate-fade-in text-xs font-semibold">
+            <div className="mb-6 px-4 py-2.5 rounded-2xl bg-[#52b788] text-[#070f0b] flex items-center justify-between shadow-glow animate-fade-in text-xs font-bold">
               <div className="flex items-center gap-2">
-                <span className={`w-2.5 h-2.5 rounded-full ${remainingSeconds <= 60 ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+                <span className={`w-2.5 h-2.5 rounded-full ${remainingSeconds <= 60 ? 'bg-[#ffb703] animate-ping' : 'bg-[#070f0b] animate-pulse'}`} />
                 <span className="flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                  <Radio className="w-3.5 h-3.5 text-[#070f0b]" />
                   <span>Permiso de Cámara NFC Activo</span>
                 </span>
               </div>
 
               <div className="flex items-center gap-2 font-mono">
-                <Clock className="w-3.5 h-3.5" />
-                <span className={remainingSeconds <= 60 ? 'text-amber-300 dark:text-amber-600 font-bold' : ''}>
+                <Clock className="w-3.5 h-3.5 text-[#070f0b]" />
+                <span className={remainingSeconds <= 60 ? 'text-[#070f0b] underline font-extrabold' : ''}>
                   {formatTimer(remainingSeconds)} para subir fotos
                 </span>
               </div>
@@ -396,21 +396,21 @@ export default function AlbumPublicPage({
 
           {/* Top Notification Bar for View-Only Users (No NFC or Expired) */}
           {!isAdminUser && !hasNfcAccess && (
-            <div className="mb-6 px-4 py-3 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 text-stone-700 dark:text-stone-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+            <div className="mb-6 px-4 py-3 rounded-2xl bg-[#0d1b14] border border-[#52b788]/20 text-[#b7c4bb] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-xl bg-[#ffb703]/15 text-[#ffb703] border border-[#ffb703]/30 flex items-center justify-center shrink-0">
                   <Lock className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <span className="font-semibold text-stone-900 dark:text-stone-100">Modo Visualización</span>
-                  <span className="text-stone-500 block sm:inline sm:ml-2">Puedes ver todas las fotos. Para subir las tuyas, acerca tu móvil a la tarjeta NFC del evento.</span>
+                  <span className="font-bold text-[#f8f9fa]">Modo Visualización</span>
+                  <span className="text-[#b7c4bb] block sm:inline sm:ml-2">Puedes ver todas las fotos. Para subir las tuyas, acerca tu móvil a la tarjeta NFC de La Comuna.</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowNfcModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold text-xs shrink-0 self-start sm:self-auto hover:opacity-90 transition flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-xl bg-[#52b788] text-[#070f0b] font-bold text-xs shrink-0 self-start sm:self-auto hover:bg-[#74c69d] shadow-glow transition flex items-center gap-1.5"
               >
                 <Radio className="w-3.5 h-3.5" />
                 <span>¿Cómo activar la cámara?</span>
@@ -420,23 +420,23 @@ export default function AlbumPublicPage({
 
           {/* Admin Indicator */}
           {isAdminUser && (
-            <div className="mb-6 px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-center justify-between text-xs font-semibold">
+            <div className="mb-6 px-4 py-2 rounded-2xl bg-[#1b4332]/60 border border-[#52b788]/40 text-[#52b788] flex items-center justify-between text-xs font-bold">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <ShieldCheck className="w-4 h-4 text-[#52b788]" />
                 <span>Modo Administrador (Cámara y subida activadas permanentemente)</span>
               </div>
-              <Link href="/admin" className="underline hover:text-emerald-950 dark:hover:text-white">
+              <Link href="/admin" className="underline hover:text-[#74c69d]">
                 Panel Admin
               </Link>
             </div>
           )}
 
           {/* Event Header Banner */}
-          <div className="relative rounded-3xl overflow-hidden bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-sm p-6 sm:p-10 mb-8 text-center">
+          <div className="relative rounded-3xl overflow-hidden bg-[#0d1b14]/85 border border-[#52b788]/25 shadow-glow p-6 sm:p-10 mb-8 text-center backdrop-blur-md">
             
             {/* Background Cover Image Backdrop if photo present */}
             {album?.cover_url && !isEmojiCover(album.cover_url) && (
-              <div className="absolute inset-0 z-0 opacity-15 dark:opacity-20 overflow-hidden pointer-events-none">
+              <div className="absolute inset-0 z-0 opacity-20 overflow-hidden pointer-events-none">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={album.cover_url}
@@ -449,21 +449,21 @@ export default function AlbumPublicPage({
             <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
               {/* Event Emoji Icon if emoji cover is set */}
               {album?.cover_url && isEmojiCover(album.cover_url) && (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-stone-100 to-stone-200 dark:from-stone-850 dark:to-stone-800 border border-stone-200 dark:border-stone-750 flex items-center justify-center text-4xl sm:text-5xl shadow-md mb-4 animate-bounce-subtle select-none">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-[#1b4332] to-[#0d1b14] border border-[#52b788]/40 flex items-center justify-center text-4xl sm:text-5xl shadow-glow mb-4 animate-bounce-subtle select-none">
                   {getCoverEmoji(album.cover_url)}
                 </div>
               )}
 
               {/* Event Date badge */}
               {album?.event_date && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-semibold text-stone-700 dark:text-stone-300 mb-4">
-                  <Calendar className="w-3.5 h-3.5 text-stone-500" />
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#1b4332]/50 border border-[#ffb703]/35 text-xs font-bold text-[#ffb703] mb-4 shadow-sm">
+                  <Calendar className="w-3.5 h-3.5 text-[#ffb703]" />
                   <span>{formatDateRange(album.event_date, album.event_end_date)}</span>
                 </div>
               )}
 
-              {/* Event Name */}
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-stone-950 dark:text-stone-50 mb-6">
+              {/* Event Name in Pirata One */}
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-pirata tracking-wide text-[#f8f9fa] mb-6 drop-shadow-md text-glow">
                 {album?.name}
               </h1>
 
@@ -475,19 +475,19 @@ export default function AlbumPublicPage({
                 <div className="w-full max-w-xl mx-auto">
                   <div
                     onClick={() => setShowNfcModal(true)}
-                    className="p-5 sm:p-6 rounded-3xl bg-stone-50 dark:bg-stone-850 border-2 border-dashed border-stone-200 dark:border-stone-750 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer hover:border-stone-400 dark:hover:border-stone-600 transition group"
+                    className="p-5 sm:p-6 rounded-3xl bg-[#070f0b]/80 border border-[#52b788]/30 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer hover:border-[#52b788]/70 hover:shadow-glow transition group"
                   >
                     <div className="flex items-center gap-3.5 text-left">
-                      <div className="w-12 h-12 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center shrink-0 shadow group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-2xl bg-[#1b4332] border border-[#52b788]/40 text-[#52b788] flex items-center justify-center shrink-0 shadow group-hover:scale-105 transition-transform">
                         <Radio className="w-6 h-6 animate-pulse" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                        <h3 className="text-sm font-bold text-[#f8f9fa] flex items-center gap-1.5">
                           <span>Hacer fotos requiere NFC</span>
-                          <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          <Lock className="w-3.5 h-3.5 text-[#ffb703]" />
                         </h3>
-                        <p className="text-xs text-stone-500 mt-0.5">
-                          Acerca tu móvil a la tarjeta NFC para desbloquear 5 minutos de cámara.
+                        <p className="text-xs text-[#b7c4bb] mt-0.5">
+                          Acerca tu móvil a la tarjeta NFC de La Comuna para desbloquear 5 minutos de cámara.
                         </p>
                       </div>
                     </div>
@@ -498,7 +498,7 @@ export default function AlbumPublicPage({
                         e.stopPropagation();
                         setShowNfcModal(true);
                       }}
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-semibold shrink-0 shadow group-hover:opacity-90 transition"
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#52b788] text-[#070f0b] text-xs font-bold shrink-0 shadow-glow hover:bg-[#74c69d] group-hover:scale-105 transition"
                     >
                       Activar Cámara
                     </button>
@@ -515,33 +515,33 @@ export default function AlbumPublicPage({
 
       {/* Modal: How to activate camera via NFC */}
       {showNfcModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="relative w-full max-w-sm bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 border border-stone-200 dark:border-stone-800 shadow-2xl text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
+          <div className="relative w-full max-w-sm bg-[#070f0b] rounded-3xl p-6 sm:p-8 border border-[#52b788]/30 shadow-2xl text-center">
             <button
               type="button"
               onClick={() => setShowNfcModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+              className="absolute top-4 right-4 p-2 rounded-full text-[#b7c4bb] hover:text-white hover:bg-[#1b4332]/50 transition"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-16 h-16 rounded-3xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#1b4332] to-[#0d1b14] border border-[#52b788]/40 text-[#52b788] flex items-center justify-center mx-auto mb-4 shadow-glow">
               <Radio className="w-8 h-8 animate-pulse" />
             </div>
 
-            <h3 className="text-xl font-bold text-stone-950 dark:text-stone-50 mb-2">
+            <h3 className="text-2xl font-pirata text-[#f8f9fa] tracking-wide mb-2">
               Desbloquea la Cámara
             </h3>
 
-            <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed mb-6">
-              Para subir tus recuerdos a este álbum, <strong>acerca la parte trasera de tu teléfono a la tarjeta NFC</strong> o escanea el código del evento. Obtendrás <strong>5 minutos</strong> de acceso a la cámara.
+            <p className="text-xs text-[#b7c4bb] leading-relaxed mb-6 font-sans">
+              Para subir tus recuerdos a este álbum, <strong>acerca la parte trasera de tu teléfono a la tarjeta NFC de La Comuna</strong> o escanea el código del evento. Obtendrás <strong>5 minutos</strong> de acceso a la cámara.
             </p>
 
             <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={() => setShowNfcModal(false)}
-                className="w-full py-3 px-4 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-xs font-semibold hover:opacity-90 transition shadow"
+                className="w-full py-3 px-4 rounded-xl bg-[#52b788] text-[#070f0b] text-xs font-bold hover:bg-[#74c69d] transition shadow-glow"
               >
                 Entendido
               </button>
@@ -550,7 +550,7 @@ export default function AlbumPublicPage({
               <button
                 type="button"
                 onClick={() => grantNfcSession(300)}
-                className="text-[11px] text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 underline pt-2"
+                className="text-[11px] text-[#52b788]/70 hover:text-[#52b788] underline pt-2"
               >
                 Simular escaneo NFC (Prueba - 5 min)
               </button>
@@ -561,3 +561,4 @@ export default function AlbumPublicPage({
     </div>
   );
 }
+

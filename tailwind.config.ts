@@ -9,21 +9,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        border: "var(--border)",
-        accent: {
-          50: "#f8fafc",
-          100: "#f1f5f9",
-          200: "#e2e8f0",
-          800: "#1e293b",
-          900: "#0f172a",
-          950: "#020617",
-        }
+        'comuna-dark': '#070f0b',
+        'comuna-card': 'rgba(13, 27, 20, 0.85)',
+        'comuna-card-hover': 'rgba(22, 48, 35, 0.9)',
+        'comuna-border': 'rgba(82, 183, 136, 0.2)',
+        'comuna-border-hover': 'rgba(82, 183, 136, 0.5)',
+        'primary': {
+          DEFAULT: '#52b788',
+          hover: '#74c69d',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#52b788',
+          500: '#2d6a4f',
+          600: '#1b4332',
+          700: '#081c15',
+        },
+        'secondary': {
+          DEFAULT: '#1b4332',
+          dark: '#081c15',
+        },
+        'accent': {
+          DEFAULT: '#ffb703',
+          hover: '#ffc300',
+          50: '#fffbeb',
+          100: '#fef3c7',
+          400: '#ffb703',
+          500: '#fb8500',
+        },
+        'text-main': '#f8f9fa',
+        'text-muted': '#b7c4bb',
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "sans-serif"],
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        sans: ["'Outfit'", "sans-serif"],
+        display: ["'Pirata One'", "cursive"],
+        pirata: ["'Pirata One'", "cursive"],
+      },
+      boxShadow: {
+        'glow': '0 0 15px rgba(82, 183, 136, 0.25)',
+        'glow-hover': '0 0 25px rgba(82, 183, 136, 0.5)',
+        'glow-gold': '0 0 20px rgba(255, 183, 3, 0.35)',
       },
       animation: {
         'shutter': 'shutterFlash 0.35s ease-out forwards',

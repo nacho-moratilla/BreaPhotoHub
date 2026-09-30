@@ -246,7 +246,7 @@ export default function AlbumAdminManagePage({
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col pb-20">
+    <div className="min-h-screen bg-[#070f0b] text-[#f8f9fa] flex flex-col pb-20">
       <Navbar currentAlbumName={album?.name} showAdminLink={true} />
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
 
@@ -256,7 +256,7 @@ export default function AlbumAdminManagePage({
         <div className="flex items-center justify-between mb-8">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-xs font-medium text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#b7c4bb] hover:text-[#52b788] transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Volver al panel general</span>
@@ -265,7 +265,7 @@ export default function AlbumAdminManagePage({
           <Link
             href={`/album/${slug}`}
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 text-xs font-semibold hover:bg-stone-200 dark:hover:bg-stone-700 transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0d1b14] border border-[#52b788]/30 text-[#52b788] text-xs font-bold hover:border-[#52b788]/60 transition"
           >
             <span>Ver Álbum Público</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -273,8 +273,8 @@ export default function AlbumAdminManagePage({
         </div>
 
         {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3 text-stone-500">
-            <RefreshCw className="w-6 h-6 animate-spin" />
+          <div className="py-24 flex flex-col items-center justify-center gap-3 text-[#b7c4bb]">
+            <div className="w-8 h-8 rounded-full border-2 border-[#52b788] border-t-transparent animate-spin" />
             <span className="text-sm font-medium">Cargando álbum...</span>
           </div>
         ) : (
@@ -298,9 +298,9 @@ export default function AlbumAdminManagePage({
               <div className="lg:col-span-6 space-y-6">
                 
                 {/* Event Details Card */}
-                <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-sm">
+                <div className="p-6 rounded-3xl bg-[#0d1b14] border border-[#52b788]/30 shadow-2xl">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold tracking-tight text-stone-950 dark:text-stone-50">
+                    <h2 className="text-2xl font-pirata tracking-wide text-[#f8f9fa] text-glow">
                       Detalles del Evento
                     </h2>
                     
@@ -308,11 +308,11 @@ export default function AlbumAdminManagePage({
                     {album?.cover_url && (
                       <div className="flex items-center gap-2">
                         {isEmojiCover(album.cover_url) ? (
-                          <span className="text-2xl p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                          <span className="text-2xl p-1.5 rounded-xl bg-gradient-to-br from-[#1b4332] to-[#0d1b14] border border-[#52b788]/40 shadow-glow">
                             {getCoverEmoji(album.cover_url)}
                           </span>
                         ) : (
-                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-stone-200 dark:border-stone-700">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#52b788]/40 shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={album.cover_url} alt="Portada" className="w-full h-full object-cover" />
                           </div>
@@ -323,14 +323,14 @@ export default function AlbumAdminManagePage({
 
                   <div className="space-y-3.5 text-sm">
                     <div>
-                      <span className="text-xs text-stone-400 block">Nombre del Álbum</span>
-                      <span className="font-semibold text-stone-800 dark:text-stone-200">{album!.name}</span>
+                      <span className="text-xs font-bold text-[#ffb703] block uppercase tracking-wider">Nombre del Álbum</span>
+                      <span className="font-pirata text-2xl text-[#f8f9fa] tracking-wide">{album!.name}</span>
                     </div>
 
                     {album!.event_date && (
                       <div>
-                        <span className="text-xs text-stone-400 block">Fechas del Evento</span>
-                        <span className="font-medium text-stone-700 dark:text-stone-300">
+                        <span className="text-xs font-bold text-[#ffb703] block uppercase tracking-wider">Fechas del Evento</span>
+                        <span className="font-semibold text-[#b7c4bb]">
                           {formatDateRange(album!.event_date, album!.event_end_date)}
                         </span>
                       </div>
@@ -338,11 +338,11 @@ export default function AlbumAdminManagePage({
 
                     {/* Secret NFC Token */}
                     <div>
-                      <span className="text-xs text-stone-400 block mb-1">Token Secreto NFC (Protección de cámara)</span>
+                      <span className="text-xs font-bold text-[#ffb703] block mb-1 uppercase tracking-wider">Token Secreto NFC (Protección de cámara)</span>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                          <Key className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="font-mono text-xs font-bold text-stone-900 dark:text-stone-100 tracking-wider">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#070f0b] border border-[#52b788]/40">
+                          <Key className="w-3.5 h-3.5 text-[#ffb703]" />
+                          <span className="font-mono text-xs font-bold text-[#52b788] tracking-wider">
                             {currentNfcToken}
                           </span>
                         </div>
@@ -354,17 +354,17 @@ export default function AlbumAdminManagePage({
                             navigator.clipboard.writeText(nfcUrl);
                             addToast('success', '¡Enlace NFC copiado al portapapeles!');
                           }}
-                          className="px-2.5 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-medium flex items-center gap-1 transition"
+                          className="px-2.5 py-1.5 rounded-xl bg-[#070f0b] hover:bg-[#1b4332]/40 text-[#b7c4bb] hover:text-white border border-[#52b788]/30 text-xs font-semibold flex items-center gap-1 transition"
                           title="Copiar enlace completo para NFC"
                         >
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-3.5 h-3.5 text-[#ffb703]" />
                           <span>Copiar enlace NFC</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={handleRegenerateNfcToken}
-                          className="p-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 text-xs transition"
+                          className="p-1.5 rounded-xl bg-[#070f0b] hover:bg-[#1b4332]/40 border border-[#52b788]/30 text-[#b7c4bb] hover:text-[#52b788] text-xs transition"
                           title="Regenerar clave aleatoria"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
@@ -373,34 +373,34 @@ export default function AlbumAdminManagePage({
                     </div>
 
                     <div>
-                      <span className="text-xs text-stone-400 block">Enlace público (Solo ver)</span>
-                      <span className="font-mono text-xs text-stone-600 dark:text-stone-400 break-all">
+                      <span className="text-xs font-bold text-[#ffb703] block uppercase tracking-wider">Enlace público (Solo ver)</span>
+                      <span className="font-mono text-xs text-[#52b788] break-all">
                         {typeof window !== 'undefined' ? `${window.location.origin}/album/${album!.slug}` : `/album/${album!.slug}`}
                       </span>
                     </div>
                   </div>
 
                   {/* Button to toggle Cover Editor */}
-                  <div className="mt-5 pt-4 border-t border-stone-100 dark:border-stone-800">
+                  <div className="mt-5 pt-4 border-t border-[#52b788]/20">
                     <button
                       type="button"
                       onClick={() => setIsEditingCover(!isEditingCover)}
-                      className="w-full py-2.5 px-4 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-semibold flex items-center justify-center gap-2 transition"
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#070f0b] border border-[#52b788]/30 hover:border-[#52b788]/60 text-[#f8f9fa] text-xs font-bold flex items-center justify-center gap-2 transition"
                     >
-                      <Smile className="w-4 h-4 text-amber-500" />
+                      <Smile className="w-4 h-4 text-[#ffb703]" />
                       <span>{isEditingCover ? 'Ocultar Editor de Portada' : 'Cambiar Foto de Portada o Emoticono'}</span>
                     </button>
                   </div>
 
                   {/* Interactive Cover Editor */}
                   {isEditingCover && (
-                    <div className="mt-4 p-4 rounded-2xl bg-stone-50 dark:bg-stone-850 border border-stone-200 dark:border-stone-700 space-y-4 animate-fade-in">
-                      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-stone-200/60 dark:bg-stone-800">
+                    <div className="mt-4 p-4 rounded-2xl bg-[#070f0b] border border-[#52b788]/30 space-y-4 animate-fade-in">
+                      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#0d1b14] border border-[#52b788]/20">
                         <button
                           type="button"
                           onClick={() => setCoverType('emoji')}
-                          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition ${
-                            coverType === 'emoji' ? 'bg-white dark:bg-stone-900 shadow-sm text-stone-900 dark:text-stone-100' : 'text-stone-600 dark:text-stone-400'
+                          className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition ${
+                            coverType === 'emoji' ? 'bg-[#52b788] text-[#070f0b] shadow-glow' : 'text-[#b7c4bb]'
                           }`}
                         >
                           <Smile className="w-3.5 h-3.5" />
@@ -409,8 +409,8 @@ export default function AlbumAdminManagePage({
                         <button
                           type="button"
                           onClick={() => setCoverType('photo')}
-                          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition ${
-                            coverType === 'photo' ? 'bg-white dark:bg-stone-900 shadow-sm text-stone-900 dark:text-stone-100' : 'text-stone-600 dark:text-stone-400'
+                          className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition ${
+                            coverType === 'photo' ? 'bg-[#52b788] text-[#070f0b] shadow-glow' : 'text-[#b7c4bb]'
                           }`}
                         >
                           <ImageIcon className="w-3.5 h-3.5" />
@@ -419,8 +419,8 @@ export default function AlbumAdminManagePage({
                         <button
                           type="button"
                           onClick={() => setCoverType('none')}
-                          className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition ${
-                            coverType === 'none' ? 'bg-white dark:bg-stone-900 shadow-sm text-stone-900 dark:text-stone-100' : 'text-stone-600 dark:text-stone-400'
+                          className={`py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition ${
+                            coverType === 'none' ? 'bg-[#52b788] text-[#070f0b] shadow-glow' : 'text-[#b7c4bb]'
                           }`}
                         >
                           <span>Ninguno</span>
@@ -441,8 +441,8 @@ export default function AlbumAdminManagePage({
                                 }}
                                 className={`w-full aspect-square rounded-lg flex items-center justify-center text-base hover:scale-110 transition ${
                                   selectedEmoji === emoji && !customEmojiInput
-                                    ? 'bg-stone-900 text-white dark:bg-stone-100 ring-2 ring-stone-900 dark:ring-white'
-                                    : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700'
+                                    ? 'bg-[#52b788] text-[#070f0b] ring-2 ring-[#52b788] shadow-glow'
+                                    : 'bg-[#0d1b14] border border-[#52b788]/20'
                                 }`}
                               >
                                 {emoji}
@@ -455,7 +455,7 @@ export default function AlbumAdminManagePage({
                             value={customEmojiInput}
                             onChange={(e) => setCustomEmojiInput(e.target.value)}
                             maxLength={4}
-                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-xs focus:outline-none focus:border-stone-500"
+                            className="w-full px-3 py-2 rounded-xl bg-[#0d1b14] border border-[#52b788]/30 text-xs text-[#f8f9fa] placeholder-[#b7c4bb]/50 focus:outline-none focus:border-[#52b788]"
                           />
                         </div>
                       )}
@@ -464,7 +464,7 @@ export default function AlbumAdminManagePage({
                       {coverType === 'photo' && (
                         <div>
                           {coverPreview ? (
-                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-stone-200 dark:border-stone-700 mb-2">
+                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-[#52b788]/30 mb-2">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={coverPreview} alt="Portada" className="w-full h-full object-cover" />
                               <button
@@ -473,15 +473,15 @@ export default function AlbumAdminManagePage({
                                   setCoverFile(null);
                                   setCoverPreview(null);
                                 }}
-                                className="absolute top-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[11px] rounded"
+                                className="absolute top-2 right-2 px-2 py-0.5 bg-black/70 text-[#ffb703] border border-[#ffb703]/30 text-[11px] rounded"
                               >
                                 Quitar
                               </button>
                             </div>
                           ) : (
-                            <label className="border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-800 transition">
-                              <UploadCloud className="w-6 h-6 text-stone-400 mb-1" />
-                              <span className="text-xs text-stone-600 dark:text-stone-400">Subir nueva foto</span>
+                            <label className="border-2 border-dashed border-[#52b788]/30 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-[#1b4332]/30 transition">
+                              <UploadCloud className="w-6 h-6 text-[#52b788] mb-1" />
+                              <span className="text-xs text-[#b7c4bb]">Subir nueva foto</span>
                               <input
                                 type="file"
                                 accept="image/*"
@@ -503,7 +503,7 @@ export default function AlbumAdminManagePage({
                         type="button"
                         onClick={handleSaveCover}
                         disabled={isSavingCover}
-                        className="w-full py-2.5 px-4 rounded-xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 text-xs font-semibold flex items-center justify-center gap-1.5 shadow transition disabled:opacity-50"
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#52b788] hover:bg-[#74c69d] text-[#070f0b] text-xs font-bold flex items-center justify-center gap-1.5 shadow-glow transition disabled:opacity-50"
                       >
                         {isSavingCover ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                         <span>Guardar Portada</span>
@@ -513,25 +513,25 @@ export default function AlbumAdminManagePage({
                 </div>
 
                 {/* NFC Setup Helper */}
-                <div className="p-6 rounded-3xl bg-stone-900 text-stone-100 dark:bg-stone-850 border border-stone-800 shadow-sm">
-                    <p className="text-xs text-stone-400 leading-relaxed mb-3">
-                      Graba tus pegatinas o tarjetas NFC (NTAG213/215) con este enlace protegido. Solo los teléfonos que toquen físicamente la tarjeta obtendrán <strong>5 minutos</strong> de permiso de subida:
+                <div className="p-6 rounded-3xl bg-[#0d1b14] border border-[#52b788]/30 shadow-2xl">
+                    <p className="text-xs text-[#b7c4bb] leading-relaxed mb-3 font-sans">
+                      Graba tus pegatinas o tarjetas NFC de La Comuna con este enlace protegido. Solo los teléfonos que toquen físicamente la tarjeta obtendrán <strong>5 minutos</strong> de permiso de subida:
                     </p>
-                    <div className="p-3 rounded-xl bg-stone-950 border border-stone-800 font-mono text-[11px] text-emerald-400 select-all break-all mb-4">
+                    <div className="p-3 rounded-xl bg-[#070f0b] border border-[#52b788]/40 font-mono text-[11px] text-[#52b788] select-all break-all mb-4">
                       {typeof window !== 'undefined' ? `${window.location.origin}/album/${album!.slug}?nfc=${currentNfcToken}` : `/album/${album!.slug}?nfc=${currentNfcToken}`}
                     </div>
-                    <ol className="text-xs text-stone-300 space-y-1.5 list-decimal list-inside">
+                    <ol className="text-xs text-[#b7c4bb] space-y-1.5 list-decimal list-inside font-sans">
                       <li>Descarga la app gratuita <strong>NFC Tools</strong> en tu móvil.</li>
                       <li>Selecciona <em>Escribir &gt; Añadir un registro &gt; URL / URI</em>.</li>
                       <li>Pega el enlace protegido con token (arriba).</li>
-                      <li>Acerca tu pegatina o tarjeta NFC para grabarla.</li>
+                      <li>Acerca tu pegatina o tarjeta NFC de la peña para grabarla.</li>
                     </ol>
                 </div>
               </div>
             </div>
 
             {/* Bottom Section: Photo Moderation & Full Gallery */}
-            <div className="pt-8 border-t border-stone-200 dark:border-stone-800">
+            <div className="pt-8 border-t border-[#52b788]/20">
               <PhotoGallery
                 photos={photos}
                 albumName={album!.name}

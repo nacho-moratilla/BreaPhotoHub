@@ -1,11 +1,11 @@
 {
-  "name": "BreaPhotoHub",
-  "short_name": "BreaPhotoHub",
-  "description": "Álbumes y Recuerdos de Brea",
+  "name": "Peña La Comuna",
+  "short_name": "La Comuna",
+  "description": "Recuerdos y Fotos de la Peña La Comuna",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0c0a09",
-  "theme_color": "#0c0a09",
+  "background_color": "#070f0b",
+  "theme_color": "#070f0b",
   "icons": [
     {
       "src": "/icon.png",

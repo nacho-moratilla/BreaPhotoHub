@@ -3,18 +3,18 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, Image as ImageIcon, Loader2, Sparkles, Smile, UploadCloud, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Image as ImageIcon, Loader2, Smile, UploadCloud } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/Toast';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { slugify, compressImage, isEmojiCover, getCoverEmoji, generateNfcToken } from '@/lib/utils';
+import { slugify, compressImage, generateNfcToken } from '@/lib/utils';
 import { ToastMessage } from '@/lib/types';
 
 const PRESET_EMOJIS = [
-  '🎉', '🍷', '💃', '🌾', '⛪', '🎆', 
-  '🍻', '🥘', '🎂', '⚽', '🎸', '🌲', 
-  '👑', '🐂', '🥳', '🏆', '🎶', '📸', 
-  '🕺', '🌻', '🍇', '🔔', '🎭', '🎈'
+  '🐂', '🎉', '🍷', '💃', '🍻', '🥘', 
+  '🎂', '⚽', '🎸', '🌲', '👑', '🥳', 
+  '🏆', '🎶', '📸', '🕺', '🌻', '🍇', 
+  '🔔', '🎭', '🎈', '⛪', '🌾', '🎆'
 ];
 
 export default function NewAlbumPage() {
@@ -29,7 +29,7 @@ export default function NewAlbumPage() {
   
   // Cover selection: 'photo' | 'emoji' | 'none'
   const [coverType, setCoverType] = useState<'photo' | 'emoji' | 'none'>('emoji');
-  const [selectedEmoji, setSelectedEmoji] = useState('🎉');
+  const [selectedEmoji, setSelectedEmoji] = useState('🐂');
   const [customEmojiInput, setCustomEmojiInput] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export default function NewAlbumPage() {
       let finalCoverValue: string | null = null;
 
       if (coverType === 'emoji') {
-        const emoji = customEmojiInput.trim() || selectedEmoji || '🎉';
+        const emoji = customEmojiInput.trim() || selectedEmoji || '🐂';
         finalCoverValue = `emoji:${emoji}`;
       } else if (coverType === 'photo' && coverFile && isSupabaseConfigured) {
         const compressedCover = await compressImage(coverFile, 1600, 0.85);
@@ -126,85 +126,85 @@ export default function NewAlbumPage() {
         }
       }
 
-      addToast('success', '¡Álbum creado con éxito!');
+      addToast('success', '¡Álbum de La Comuna creado con éxito!');
       setTimeout(() => {
         router.push(`/admin/albums/${finalSlug}`);
       }, 1000);
     } catch (err: any) {
       console.error('Error al crear el álbum:', err);
-      addToast('error', 'Hubo un error al crear el álbum. Verifica las credenciales de Supabase.');
+      addToast('error', 'Hubo un error al crear el álbum.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col pb-16">
+    <div className="min-h-screen bg-[#070f0b] text-[#f8f9fa] flex flex-col pb-16">
       <Navbar showAdminLink={true} />
       <ToastContainer toasts={toasts} onDismiss={removeToast} />
 
       <main className="flex-1 max-w-xl w-full mx-auto px-4 sm:px-6 py-8">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-xs font-medium text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 mb-6 transition"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#b7c4bb] hover:text-[#52b788] mb-6 transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Volver al panel</span>
+          <span>Volver al panel de administración</span>
         </Link>
 
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-lg">
+        <div className="p-6 sm:p-8 rounded-3xl bg-[#0d1b14] border border-[#52b788]/30 shadow-2xl">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold tracking-tight text-stone-950 dark:text-stone-50">
+            <h1 className="text-3xl font-pirata text-[#f8f9fa] tracking-wide text-glow">
               Crear Nuevo Álbum
             </h1>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Configura el evento, su enlace y elige una foto de portada o un emoticono.
+            <p className="text-xs sm:text-sm text-[#b7c4bb] mt-1 font-sans">
+              Configura el evento de la peña, su enlace y elige una foto de portada o emoticono.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Album Name */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#ffb703] uppercase tracking-wider mb-2">
                 Nombre del Evento *
               </label>
               <input
                 type="text"
                 required
-                placeholder="Ej: Fiestas Patronales de Brea, Romería, Cumpleaños..."
+                placeholder="Ej: La Cagada del Manso 2026, Fiestas Patronales..."
                 value={name}
                 onChange={handleNameChange}
-                className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-sm focus:outline-none focus:border-stone-500 transition"
+                className="w-full px-4 py-3 rounded-xl bg-[#070f0b] border border-[#52b788]/30 text-[#f8f9fa] placeholder-[#b7c4bb]/50 text-sm focus:outline-none focus:border-[#52b788] transition font-sans"
               />
             </div>
 
             {/* Custom Slug / URL */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-[#ffb703] uppercase tracking-wider mb-2">
                 Enlace Único (URL)
               </label>
               <div className="flex items-center">
-                <span className="px-3 py-3 rounded-l-xl bg-stone-100 dark:bg-stone-800/60 border border-r-0 border-stone-200 dark:border-stone-700 text-xs text-stone-400 font-mono">
+                <span className="px-3 py-3 rounded-l-xl bg-[#1b4332]/40 border border-r-0 border-[#52b788]/30 text-xs text-[#52b788] font-mono">
                   /album/
                 </span>
                 <input
                   type="text"
                   required
-                  placeholder="fiestas-brea-2026"
+                  placeholder="cagada-del-manso-2026"
                   value={slug}
                   onChange={(e) => {
                     setSlug(slugify(e.target.value));
                     setCustomSlugEdited(true);
                   }}
-                  className="w-full px-3 py-3 rounded-r-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-mono text-sm focus:outline-none focus:border-stone-500 transition"
+                  className="w-full px-3 py-3 rounded-r-xl bg-[#070f0b] border border-[#52b788]/30 text-[#f8f9fa] font-mono text-sm focus:outline-none focus:border-[#52b788] transition"
                 />
               </div>
             </div>
 
-            {/* Event Dates (Start and Optional End Date) */}
+            {/* Event Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#ffb703] uppercase tracking-wider mb-2">
                   Fecha de Comienzo *
                 </label>
                 <input
@@ -212,39 +212,39 @@ export default function NewAlbumPage() {
                   required
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:border-stone-500 transition"
+                  className="w-full px-4 py-3 rounded-xl bg-[#070f0b] border border-[#52b788]/30 text-[#f8f9fa] text-sm focus:outline-none focus:border-[#52b788] transition font-sans"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">
-                  Fecha de Finalización <span className="text-stone-400 font-normal lowercase">(opcional)</span>
+                <label className="block text-xs font-bold text-[#ffb703] uppercase tracking-wider mb-2">
+                  Fecha de Fin <span className="text-[#b7c4bb] font-normal lowercase">(opcional)</span>
                 </label>
                 <input
                   type="date"
                   value={eventEndDate}
                   min={eventDate}
                   onChange={(e) => setEventEndDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm focus:outline-none focus:border-stone-500 transition"
+                  className="w-full px-4 py-3 rounded-xl bg-[#070f0b] border border-[#52b788]/30 text-[#f8f9fa] text-sm focus:outline-none focus:border-[#52b788] transition font-sans"
                 />
               </div>
             </div>
 
             {/* Cover Selector: Photo vs Emoji */}
             <div className="pt-2">
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-3">
+              <label className="block text-xs font-bold text-[#ffb703] uppercase tracking-wider mb-3">
                 Portada del Álbum
               </label>
 
               {/* Selector Tabs */}
-              <div className="grid grid-cols-3 gap-2 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 mb-4">
+              <div className="grid grid-cols-3 gap-2 p-1 rounded-xl bg-[#070f0b] border border-[#52b788]/20 mb-4">
                 <button
                   type="button"
                   onClick={() => setCoverType('emoji')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                     coverType === 'emoji'
-                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                      ? 'bg-[#52b788] text-[#070f0b] shadow-glow'
+                      : 'text-[#b7c4bb] hover:text-white'
                   }`}
                 >
                   <Smile className="w-3.5 h-3.5" />
@@ -254,10 +254,10 @@ export default function NewAlbumPage() {
                 <button
                   type="button"
                   onClick={() => setCoverType('photo')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                     coverType === 'photo'
-                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                      ? 'bg-[#52b788] text-[#070f0b] shadow-glow'
+                      : 'text-[#b7c4bb] hover:text-white'
                   }`}
                 >
                   <ImageIcon className="w-3.5 h-3.5" />
@@ -267,10 +267,10 @@ export default function NewAlbumPage() {
                 <button
                   type="button"
                   onClick={() => setCoverType('none')}
-                  className={`py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                     coverType === 'none'
-                      ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-sm'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                      ? 'bg-[#52b788] text-[#070f0b] shadow-glow'
+                      : 'text-[#b7c4bb] hover:text-white'
                   }`}
                 >
                   <span>Sin Portada</span>
@@ -279,12 +279,12 @@ export default function NewAlbumPage() {
 
               {/* Emoji Choice UI */}
               {coverType === 'emoji' && (
-                <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 space-y-3.5">
+                <div className="p-4 rounded-2xl bg-[#070f0b] border border-[#52b788]/30 space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                    <span className="text-xs font-semibold text-[#b7c4bb]">
                       Elige un icono para el evento:
                     </span>
-                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-xl shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-[#0d1b14] border border-[#52b788]/40 flex items-center justify-center text-xl shadow-glow">
                       {customEmojiInput.trim() || selectedEmoji}
                     </div>
                   </div>
@@ -301,8 +301,8 @@ export default function NewAlbumPage() {
                         }}
                         className={`w-full aspect-square rounded-xl flex items-center justify-center text-lg hover:scale-110 transition ${
                           selectedEmoji === emoji && !customEmojiInput
-                            ? 'bg-stone-900 text-white dark:bg-stone-100 ring-2 ring-stone-900 dark:ring-white scale-105'
-                            : 'bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/80 dark:border-stone-700/80'
+                            ? 'bg-[#52b788] text-[#070f0b] ring-2 ring-[#52b788] scale-105 shadow-glow'
+                            : 'bg-[#0d1b14] hover:bg-[#1b4332]/40 border border-[#52b788]/20'
                         }`}
                       >
                         {emoji}
@@ -314,11 +314,11 @@ export default function NewAlbumPage() {
                   <div>
                     <input
                       type="text"
-                      placeholder="O escribe aquí cualquier otro emoji (ej: 🎆, 🏇, 🎪)..."
+                      placeholder="O escribe aquí cualquier otro emoji (ej: 🐂, 🎆, 🎪)..."
                       value={customEmojiInput}
                       onChange={(e) => setCustomEmojiInput(e.target.value)}
                       maxLength={4}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-500 transition"
+                      className="w-full px-3 py-2 rounded-xl bg-[#0d1b14] border border-[#52b788]/30 text-xs text-[#f8f9fa] placeholder-[#b7c4bb]/50 focus:outline-none focus:border-[#52b788] transition"
                     />
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function NewAlbumPage() {
               {coverType === 'photo' && (
                 <div>
                   {coverPreview ? (
-                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-700 mb-2">
+                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-[#52b788]/30 mb-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={coverPreview}
@@ -341,15 +341,15 @@ export default function NewAlbumPage() {
                           setCoverFile(null);
                           setCoverPreview(null);
                         }}
-                        className="absolute top-2 right-2 px-2.5 py-1 bg-black/70 text-white text-xs rounded-lg hover:bg-black transition"
+                        className="absolute top-2 right-2 px-2.5 py-1 bg-[#070f0b]/80 text-[#ffb703] border border-[#ffb703]/30 text-xs rounded-lg hover:bg-black transition"
                       >
                         Quitar
                       </button>
                     </div>
                   ) : (
-                    <label className="border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50 transition">
-                      <UploadCloud className="w-8 h-8 text-stone-400 mb-2" />
-                      <span className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                    <label className="border-2 border-dashed border-[#52b788]/30 hover:border-[#52b788]/70 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-[#1b4332]/20 transition">
+                      <UploadCloud className="w-8 h-8 text-[#52b788] mb-2" />
+                      <span className="text-xs font-semibold text-[#b7c4bb]">
                         Pulsa para subir archivo de foto de portada
                       </span>
                       <input
@@ -368,7 +368,7 @@ export default function NewAlbumPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-6 py-4 px-6 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold text-sm flex items-center justify-center gap-2 shadow-lg hover:opacity-90 active:scale-[0.99] transition disabled:opacity-50 cursor-pointer"
+              className="w-full mt-6 py-4 px-6 rounded-2xl bg-[#52b788] hover:bg-[#74c69d] text-[#070f0b] font-bold text-sm flex items-center justify-center gap-2 shadow-glow hover:scale-[1.02] active:scale-[0.99] transition disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -378,7 +378,7 @@ export default function NewAlbumPage() {
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  <span>Crear Álbum y Generar QR</span>
+                  <span>Crear Álbum y Generar QR / NFC</span>
                 </>
               )}
             </button>

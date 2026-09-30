@@ -82,11 +82,11 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
     if (!previewBlob) return;
     try {
       setIsUploading(true);
-      setUploadProgress('Subiendo foto al álbum...');
+      setUploadProgress('Subiendo foto al álbum de La Comuna...');
       await onUploadPhotos([
         {
           blob: previewBlob,
-          filename: `camera-${Date.now()}.jpg`,
+          filename: `comuna-${Date.now()}.jpg`,
           caption: caption.trim() || undefined,
         },
       ]);
@@ -178,9 +178,9 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
           type="button"
           onClick={handleOpenNativeCamera}
           disabled={disabled || isUploading}
-          className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-base flex items-center justify-center gap-3 shadow-lg shadow-stone-900/10 dark:shadow-stone-100/5 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+          className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-[#52b788] hover:bg-[#74c69d] text-[#070f0b] font-bold text-base flex items-center justify-center gap-3 shadow-glow hover:scale-105 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full bg-white/20 dark:bg-stone-900/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
+          <div className="w-8 h-8 rounded-full bg-[#070f0b]/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
             <Camera className="w-5 h-5" />
           </div>
           <span>Hacer Foto Ahora</span>
@@ -191,9 +191,9 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
           type="button"
           onClick={() => galleryInputRef.current?.click()}
           disabled={disabled || isUploading}
-          className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 font-medium text-base flex items-center justify-center gap-3 shadow-sm hover:bg-stone-50 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+          className="w-full sm:flex-1 py-4 px-6 rounded-2xl bg-[#0d1b14] text-[#f8f9fa] border border-[#52b788]/30 font-semibold text-base flex items-center justify-center gap-3 shadow-sm hover:border-[#52b788]/60 hover:bg-[#1b4332]/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-400 group-hover:scale-110 transition-transform">
+          <div className="w-8 h-8 rounded-full bg-[#1b4332]/60 border border-[#52b788]/20 flex items-center justify-center text-[#52b788] group-hover:scale-110 transition-transform">
             <ImageIcon className="w-4 h-4" />
           </div>
           <span>Subir de Galería</span>
@@ -202,37 +202,37 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
       {/* Upload Progress feedback */}
       {isUploading && (
-        <div className="mt-4 p-3.5 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center gap-3 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-300 animate-pulse shadow-sm">
-          <Loader2 className="w-4 h-4 animate-spin text-stone-900 dark:text-stone-100" />
+        <div className="mt-4 p-3.5 rounded-xl bg-[#0d1b14] border border-[#52b788]/30 flex items-center justify-center gap-3 text-xs sm:text-sm font-semibold text-[#52b788] animate-pulse shadow-sm">
+          <Loader2 className="w-4 h-4 animate-spin text-[#52b788]" />
           <span>{uploadProgress || 'Subiendo fotos...'}</span>
         </div>
       )}
 
       {/* Photo Preview & Confirmation Modal after taking a photo with Native Camera */}
       {previewPhotoUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 sm:bg-black/80 backdrop-blur-md p-0 sm:p-4 animate-fade-in">
-          <div className="relative w-full h-full sm:max-w-lg sm:h-[88vh] sm:max-h-[750px] bg-stone-950 sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-stone-800 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 sm:bg-black/85 backdrop-blur-md p-0 sm:p-4 animate-fade-in">
+          <div className="relative w-full h-full sm:max-w-lg sm:h-[88vh] sm:max-h-[750px] bg-[#070f0b] sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-[#52b788]/30 shadow-2xl">
             
             {/* Top Bar with back button */}
-            <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-3.5 sm:p-4 bg-gradient-to-b from-black/85 via-black/40 to-transparent">
+            <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-3.5 sm:p-4 bg-gradient-to-b from-[#070f0b]/90 via-[#070f0b]/50 to-transparent">
               <button
                 type="button"
                 onClick={handleDiscardPreview}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-900/85 hover:bg-stone-800 text-stone-200 hover:text-white text-xs sm:text-sm font-medium transition border border-stone-800 backdrop-blur-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0d1b14] hover:bg-[#1b4332] text-[#b7c4bb] hover:text-white text-xs sm:text-sm font-semibold transition border border-[#52b788]/30 backdrop-blur-sm"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Volver</span>
               </button>
 
-              <div className="flex items-center gap-2 text-white/90 text-xs sm:text-sm font-medium bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex items-center gap-2 text-[#f8f9fa] text-xs sm:text-sm font-bold bg-[#0d1b14]/80 px-3.5 py-1 rounded-full border border-[#52b788]/40 backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-[#52b788] animate-pulse" />
                 <span>Vista Previa</span>
               </div>
 
               <button
                 type="button"
                 onClick={handleDiscardPreview}
-                className="p-2 rounded-full bg-stone-900/85 text-white/80 hover:text-white hover:bg-stone-800 transition-colors border border-stone-800 backdrop-blur-sm"
+                className="p-2 rounded-full bg-[#0d1b14] text-[#b7c4bb] hover:text-white hover:bg-[#1b4332] transition-colors border border-[#52b788]/30 backdrop-blur-sm"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -249,14 +249,14 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
             </div>
 
             {/* Bottom Controls */}
-            <div className="relative z-20 p-4 sm:p-5 bg-gradient-to-t from-black via-black/90 to-transparent flex flex-col gap-3">
+            <div className="relative z-20 p-4 sm:p-5 bg-gradient-to-t from-[#070f0b] via-[#070f0b]/95 to-transparent flex flex-col gap-3">
               <input
                 type="text"
-                placeholder="Añade un comentario (opcional)..."
+                placeholder="Añade un comentario a la foto..."
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 maxLength={100}
-                className="w-full px-4 py-2.5 bg-stone-900/90 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-500 text-sm focus:outline-none focus:border-stone-600 transition"
+                className="w-full px-4 py-2.5 bg-[#0d1b14] border border-[#52b788]/30 rounded-xl text-[#f8f9fa] placeholder-[#b7c4bb]/50 text-sm focus:outline-none focus:border-[#52b788] transition font-sans"
               />
 
               <div className="flex items-center gap-2 sm:gap-3">
@@ -264,7 +264,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                   type="button"
                   onClick={handleDiscardPreview}
                   disabled={isUploading}
-                  className="py-3 px-3.5 rounded-xl bg-stone-900/80 text-stone-400 hover:text-white hover:bg-stone-800 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 border border-stone-800 transition disabled:opacity-50"
+                  className="py-3 px-3.5 rounded-xl bg-[#0d1b14] text-[#b7c4bb] hover:text-white hover:bg-[#1b4332] text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 border border-[#52b788]/30 transition disabled:opacity-50"
                   title="Cancelar y volver al álbum"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -275,9 +275,9 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                   type="button"
                   onClick={handleRetake}
                   disabled={isUploading}
-                  className="flex-1 py-3 px-3 rounded-xl bg-stone-900 text-stone-300 hover:text-white hover:bg-stone-800 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 border border-stone-800 transition disabled:opacity-50"
+                  className="flex-1 py-3 px-3 rounded-xl bg-[#0d1b14] text-[#f8f9fa] hover:bg-[#1b4332] text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 border border-[#52b788]/30 transition disabled:opacity-50"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-4 h-4 text-[#ffb703]" />
                   <span>Repetir Foto</span>
                 </button>
 
@@ -285,10 +285,10 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
                   type="button"
                   onClick={handleConfirmUpload}
                   disabled={isUploading}
-                  className="flex-1 py-3 px-3.5 rounded-xl bg-white text-stone-950 hover:bg-stone-200 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 shadow-lg transition disabled:opacity-50 cursor-pointer"
+                  className="flex-1 py-3 px-3.5 rounded-xl bg-[#52b788] text-[#070f0b] hover:bg-[#74c69d] text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-glow transition disabled:opacity-50 cursor-pointer"
                 >
                   {isUploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-stone-950" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#070f0b]" />
                   ) : (
                     <Check className="w-4 h-4" />
                   )}

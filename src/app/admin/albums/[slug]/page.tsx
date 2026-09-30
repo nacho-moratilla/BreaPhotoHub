@@ -69,11 +69,13 @@ export default function AlbumAdminManagePage({
 
   // Load Album & Photos for Admin
   const loadData = useCallback(async () => {
+    const cleanSlug = decodeURIComponent(slug).trim();
+
     if (!isSupabaseConfigured) {
       const mockAlbum: Album = {
         id: 'mock-1',
-        name: slug.replace(/-/g, ' ').toUpperCase(),
-        slug: slug,
+        name: cleanSlug.replace(/-/g, ' ').toUpperCase(),
+        slug: cleanSlug,
         cover_url: null,
         event_date: new Date().toISOString().split('T')[0],
         created_at: new Date().toISOString(),
@@ -88,10 +90,12 @@ export default function AlbumAdminManagePage({
       const { data: albumData, error: albumError } = await supabase
         .from('albums')
         .select('*')
-        .eq('slug', slug)
-        .single();
+        .ilike('slug', cleanSlug)
+        .maybeSingle();
 
-      if (albumError || !albumData) {
+      if (albumError) throw albumError;
+
+      if (!albumData) {
         setLoading(false);
         return;
       }
@@ -120,9 +124,9 @@ export default function AlbumAdminManagePage({
       if (!photosError && photosData) {
         setPhotos(photosData);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error cargando álbum para admin:', err);
-      addToast('error', 'Error al cargar los datos del álbum.');
+      addToast('error', err?.message ? `Error: ${err.message}` : 'Error al cargar los datos del álbum.');
     } finally {
       setLoading(false);
     }

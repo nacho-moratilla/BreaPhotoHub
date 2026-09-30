@@ -134,12 +134,14 @@ export default function AlbumPublicPage({
 
   // Load Album & Photos
   const fetchAlbumData = useCallback(async () => {
+    const cleanSlug = decodeURIComponent(slug).trim();
+
     if (!isSupabaseConfigured) {
       // Demo fallback mode
       const demoAlbum: Album = {
         id: 'demo-album-id',
-        name: slug.replace(/-/g, ' ').toUpperCase(),
-        slug: slug,
+        name: cleanSlug.replace(/-/g, ' ').toUpperCase(),
+        slug: cleanSlug,
         cover_url: null,
         event_date: new Date().toISOString().split('T')[0],
         created_at: new Date().toISOString(),
@@ -151,14 +153,21 @@ export default function AlbumPublicPage({
 
     try {
       setLoading(true);
-      // 1. Fetch album by slug
+      setNotFoundState(false);
+
+      // 1. Fetch album by slug (case-insensitive with ilike and maybeSingle)
       const { data: albumData, error: albumError } = await supabase
         .from('albums')
         .select('*')
-        .eq('slug', slug)
-        .single();
+        .ilike('slug', cleanSlug)
+        .maybeSingle();
 
-      if (albumError || !albumData) {
+      if (albumError) {
+        console.error('Error buscando álbum en base de datos:', albumError);
+        throw albumError;
+      }
+
+      if (!albumData) {
         setNotFoundState(true);
         setLoading(false);
         return;
@@ -173,12 +182,14 @@ export default function AlbumPublicPage({
         .eq('album_id', albumData.id)
         .order('uploaded_at', { ascending: false });
 
-      if (!photosError && photosData) {
-        setPhotos(photosData);
+      if (photosError) {
+        console.warn('Aviso cargando fotos del álbum:', photosError);
       }
-    } catch (err) {
+
+      setPhotos(photosData || []);
+    } catch (err: any) {
       console.error('Error cargando datos del álbum:', err);
-      addToast('error', 'Error al cargar el álbum.');
+      addToast('error', err?.message ? `Error: ${err.message}` : 'Error al cargar el álbum.');
     } finally {
       setLoading(false);
     }
